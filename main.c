@@ -103,12 +103,7 @@ int main(void) {
     int playerY = 5;
 
     while (!WindowShouldClose()) {
-        // Input
-        if (IsKeyPressed(KEY_RIGHT)) playerX++;
-        if (IsKeyPressed(KEY_LEFT))  playerX--;
-        if (IsKeyPressed(KEY_DOWN))  playerY++;
-        if (IsKeyPressed(KEY_UP))    playerY--;
-
+        
         // Mapa
         if (playerX < 0) playerX = 0;
         if (playerY < 0) playerY = 0;
@@ -116,6 +111,20 @@ int main(void) {
         if (playerY >= ALTURA) playerY = ALTURA - 1;
         int mapa[LARGURA][ALTURA];
         gerar_mapa(mapa);
+
+        // Input
+        int movimentoX = 0;
+        int movimentoY = 0;
+
+        if (IsKeyPressed(KEY_RIGHT)) movimentoX++;
+        if (IsKeyPressed(KEY_LEFT))  movimentoX--;
+        if (IsKeyPressed(KEY_DOWN))  movimentoY++;
+        if (IsKeyPressed(KEY_UP))    movimentoY--;
+
+        if (mapa[playerX + movimentoX][playerY + movimentoY] == 0){
+            playerX += movimentoX;
+            playerY += movimentoY;
+        }
 
         // Câmera presa na sala
         int cameraX = (playerX / CAMERA_LARGURA) * CAMERA_LARGURA;
