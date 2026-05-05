@@ -102,6 +102,9 @@ int main(void) {
     int playerX = 5;
     int playerY = 5;
 
+    int mapa[LARGURA][ALTURA];
+    gerar_mapa(mapa);
+
     while (!WindowShouldClose()) {
         
         // Mapa
@@ -109,8 +112,6 @@ int main(void) {
         if (playerY < 0) playerY = 0;
         if (playerX >= LARGURA) playerX = LARGURA - 1;
         if (playerY >= ALTURA) playerY = ALTURA - 1;
-        int mapa[LARGURA][ALTURA];
-        gerar_mapa(mapa);
 
         // Input
         int movimentoX = 0;
