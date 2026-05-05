@@ -58,25 +58,35 @@ int* get_linha(int y) {
     return LINHA_COMPLETA;
 }
 
-void desenhar_mapa(int cameraX, int cameraY) {
+void gerar_mapa(int mapa[LARGURA][ALTURA]){
+    for (int y = 0; y < ALTURA; y++){
+        int *linha = get_linha(y);
+
+        for (int x = 0; x < LARGURA; x++){
+            mapa[x][y] = linha[x];
+        }
+    }
+}
+
+void desenhar_mapa(int mapa[LARGURA][ALTURA], int cameraX, int cameraY) {
     for (int y = 0; y < CAMERA_ALTURA; y++) {
         int mapaY = cameraY + y;
-        int* linha = get_linha(mapaY);
 
         for (int x = 0; x < CAMERA_LARGURA; x++) {
             int mapaX = cameraX + x;
 
             if (mapaX >= LARGURA || mapaY >= ALTURA) continue;
 
-            int tile = linha[mapaX];
-            Color color = (tile == 1) ? YELLOW : BLACK; // Se a matriz for 1, é parede e portanto amarelo. Se não for, é preto e portanto "andável" 
+            int tile = mapa[mapaX][mapaY];
+
+            Color cor = (tile == 1) ? YELLOW : BLACK;
 
             DrawRectangle(
                 x * TAMANHO_TILE,
                 y * TAMANHO_TILE,
                 TAMANHO_TILE,
                 TAMANHO_TILE,
-                color
+                cor
             );
         }
     }
@@ -93,18 +103,19 @@ int main(void) {
     int playerY = 5;
 
     while (!WindowShouldClose()) {
-
         // Input
         if (IsKeyPressed(KEY_RIGHT)) playerX++;
         if (IsKeyPressed(KEY_LEFT))  playerX--;
         if (IsKeyPressed(KEY_DOWN))  playerY++;
         if (IsKeyPressed(KEY_UP))    playerY--;
 
-        // Barreiras do mapa
+        // Mapa
         if (playerX < 0) playerX = 0;
         if (playerY < 0) playerY = 0;
         if (playerX >= LARGURA) playerX = LARGURA - 1;
         if (playerY >= ALTURA) playerY = ALTURA - 1;
+        int mapa[LARGURA][ALTURA];
+        gerar_mapa(mapa);
 
         // Câmera presa na sala
         int cameraX = (playerX / CAMERA_LARGURA) * CAMERA_LARGURA;
@@ -116,7 +127,7 @@ int main(void) {
         BeginDrawing();
 
             ClearBackground(DARKGRAY);
-            desenhar_mapa(cameraX, cameraY);
+            desenhar_mapa(mapa, cameraX, cameraY);
             DrawRectangle( // Player
                 (playerX - cameraX) * TAMANHO_TILE,
                 (playerY - cameraY) * TAMANHO_TILE,
