@@ -4,7 +4,7 @@
 #define LARGURA 48
 #define ALTURA 40
 
-#define TAMANHO_TILE 20
+#define TAMANHO_TILE 80 // Quanto maior o tamanho do tile, maior a resolução do jogo
 #define CAMERA_LARGURA 12
 #define CAMERA_ALTURA 10
 
@@ -93,7 +93,7 @@ void desenhar_mapa(int mapa[LARGURA][ALTURA], int cameraX, int cameraY) {
 }
 
 int main(void) {
-    InitWindow(CAMERA_LARGURA * TAMANHO_TILE, CAMERA_ALTURA * TAMANHO_TILE, "Mapa");
+    InitWindow(CAMERA_LARGURA * TAMANHO_TILE, CAMERA_ALTURA * TAMANHO_TILE, "Secret Quest");
 
     SetTargetFPS(60);
 
