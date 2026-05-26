@@ -47,7 +47,7 @@ typedef enum {
 } Direcao;
 
 typedef struct Entidade {
-    EntTipo tipo; //saber o tipo
+    EntTipo tipo; //saber o tipo da entidade (jogador, inimigo ou item)
     Vec2i pos; //saber a posição
     int hp; //quanto de hp tem agr
     int max_hp; //quanto de hp maximo tem
@@ -59,7 +59,8 @@ typedef struct Entidade {
 } Entidade;
 
 typedef struct {
-    Entidade* cabeca;
+    Entidade* head;
+    int contagem;
 } ListaEntidades;
 
 #endif
