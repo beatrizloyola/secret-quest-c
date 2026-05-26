@@ -52,7 +52,9 @@ typedef struct Entidade {
     int hp; //quanto de hp tem agr
     int max_hp; //quanto de hp maximo tem
     int ataque; //quanto de dano dá
-    Direcao direcao; //saber a direção (NÃO IMPLEMENTADO)
+    Direcao direcao; //saber a direção
+    bool vivo;
+    float timer_ataque;
     struct Entidade* next; //próxima entidade da lista
 } Entidade;
 
