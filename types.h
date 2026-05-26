@@ -24,6 +24,10 @@ typedef struct {
     int largura, altura;
     Tile** grid;
     Vec2i spawn_jogador;
+    Vec2i spawn_inimigos[16];
+    int num_inimigos;
+    Vec2i spawn_itens[16];
+    int num_itens;
     char arquivo[64];
 } Sala;
 
