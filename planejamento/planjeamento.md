@@ -4,7 +4,7 @@
 
 | Feature | Detalhe |
 |---|---|
-| Mapa | 1 estação com 12 salas (idêntica a do jogo original) |
+| Mapa | 1 estação com 16 salas (idêntica a do jogo original) |
 | Arquivo de mapa | Cada sala é um arquivo `.txt` com grid de caracteres |
 | Inimigos | 1 tipo apenas (alien simples com patrulha básica) |
 | Combate | Corpo a corpo: botão de ataque + hitbox curta + cooldown |
