@@ -10,8 +10,8 @@ Sala* sala_carregar(const char* arquivo) {
     Sala* s = malloc(sizeof(Sala)); // Aloca espaço pra sala
     strncpy(s->arquivo, arquivo, 63); // Copia arquivo para s->arquivo
     s->arquivo[63] = '\0'; // Fim do string
-    s->spawn_jogador.x = 2;
-    s->spawn_jogador.y = 4; 
+    s->spawn_jogador.x = 0;
+    s->spawn_jogador.y = 0;
     s->num_inimigos = 0; // Qtd inicial
     s->num_itens = 0;
 
