@@ -2,7 +2,7 @@
 #define ENTIDADE_H
 
 #include "raylib.h"
-#include "types.h"
+#include "../types.h"
 
 ListaEntidades* lista_criar(); //cria a lista de entidades
 
