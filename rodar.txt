@@ -1,2 +1,8 @@
-gcc main.c -o test -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -I/usr/local/include -L/usr/local/lib
-./test
+// Linux
+
+gcc main.c -o game -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -I/usr/local/include -L/usr/local/lib
+./game
+
+// Windows
+ctrl+shift+b
+.\game.exe

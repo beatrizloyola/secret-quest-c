@@ -1,6 +1,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+<<<<<<< HEAD
 #include <stdbool.h>
 
 typedef struct {
@@ -24,12 +25,27 @@ typedef struct {
     char arquivo[64];
 } Sala;
 
+=======
+#include <raylib.h>
+
+//define posição
+typedef struct {
+    int x;  //coluna
+    int y;  //linha
+} Vec2i;
+
+//define tipo de entidade
+>>>>>>> a5dfd53c4e4b5a041be6f704f4557e11e336f6c2
 typedef enum {
     ENT_JOGADOR,
     ENT_INIMIGO,
     ENT_ITEM
 } EntTipo;
 
+<<<<<<< HEAD
+=======
+//define direção da entidade
+>>>>>>> a5dfd53c4e4b5a041be6f704f4557e11e336f6c2
 typedef enum {
     DIR_CIMA,
     DIR_BAIXO,
@@ -38,6 +54,7 @@ typedef enum {
 } Direcao;
 
 typedef struct Entidade {
+<<<<<<< HEAD
     EntTipo tipo;
     Vec2i pos;
     int hp, max_hp;
@@ -46,10 +63,20 @@ typedef struct Entidade {
     Direcao direcao;
     float timer_ataque;
     struct Entidade* prox;
+=======
+    EntTipo tipo; //saber o tipo
+    Vec2i pos; //saber a posição
+    int hp; //quanto de hp tem agr
+    int max_hp; //quanto de hp maximo tem
+    int ataque; //quanto de dano dá
+    Direcao direcao; //saber a direção (NÃO IMPLEMENTADO)
+    struct Entidade* next; //próxima entidade da lista
+>>>>>>> a5dfd53c4e4b5a041be6f704f4557e11e336f6c2
 } Entidade;
 
 typedef struct {
     Entidade* cabeca;
+<<<<<<< HEAD
     int contagem;
 } ListaEntidades;
 
@@ -77,3 +104,8 @@ typedef struct {
 } Jogo;
 
 #endif
+=======
+} ListaEntidades;
+
+#endif
+>>>>>>> a5dfd53c4e4b5a041be6f704f4557e11e336f6c2
