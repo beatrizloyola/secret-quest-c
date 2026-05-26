@@ -2,14 +2,33 @@
 #define TYPES_H
 
 #include <raylib.h>
+#include <stdbool.h>
 
-//define posição
 typedef struct {
-    int x;  //coluna
-    int y;  //linha
+    int x;
+    int y;
 } Vec2i;
 
+typedef enum {
+    TILE_CHAO,
+    TILE_PAREDE,
+    TILE_PORTA
+} TileType;
+
+typedef struct {
+    TileType tipo;
+    bool solido;
+} Tile;
+
+typedef struct {
+    int largura, altura;
+    Tile** grid;
+    Vec2i spawn_jogador;
+    char arquivo[64];
+} Sala;
+
 //define tipo de entidade
+
 typedef enum {
     ENT_JOGADOR,
     ENT_INIMIGO,
