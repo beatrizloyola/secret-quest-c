@@ -29,7 +29,6 @@ Sala* sala_carregar(const char* arquivo) {
             TileType tipo;
             switch (c) {
                 case '#': tipo = TILE_PAREDE; break;
-                case 'D': tipo = TILE_PORTA;  break;
                 default:  tipo = TILE_CHAO;   break;
             }
             s->grid[y][x].tipo   = tipo;

@@ -11,8 +11,7 @@ typedef struct {
 
 typedef enum {
     TILE_CHAO,
-    TILE_PAREDE,
-    TILE_PORTA
+    TILE_PAREDE
 } TileType;
 
 typedef struct {
