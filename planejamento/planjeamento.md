@@ -45,7 +45,6 @@ Exemplo: `sala_01.txt`
 | `S`       | Spawn do jogador         |
 | `E`       | Spawn de inimigo         |
 | `I`       | Item (`Código da Bomba`) |
-| `D`       | Porta para outra sala    |
 
 ---
 
@@ -356,7 +355,7 @@ void transicao_estado(
 
 | Dev   | Tarefa                       | Entregável               |
 | ----- | ---------------------------- | ------------------------ |
-| Beatriz | Ajustar colisão e portas     | Portas funcionando       |
+| Beatriz | Ajustar colisão     | Apresentação |
 | Daniel | Implementar combate e coleta | Gameplay principal       |
 | Pedro | Ranking + Save/Load          | Persistência funcionando |
 
