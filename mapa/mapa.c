@@ -10,8 +10,6 @@ Sala* sala_carregar(const char* arquivo) {
     Sala* s = malloc(sizeof(Sala)); // Aloca espaço pra sala
     strncpy(s->arquivo, arquivo, 63); // Copia arquivo para s->arquivo
     s->arquivo[63] = '\0'; // Fim do string
-    s->spawn_jogador.x = 0;
-    s->spawn_jogador.y = 0;
     s->num_inimigos = 0; // Qtd inicial
     s->num_itens = 0;
 
@@ -45,19 +43,18 @@ Sala* sala_carregar(const char* arquivo) {
     for (int y = 0; y < s->altura; y++) {
         s->grid[y] = malloc(s->largura * sizeof(Tile)); // Aloca uma largura por linha do mapa
 
-        // Ignora o \r que o Windows coloca no final do arquivo
         for (int x = 0; x < s->largura; x++) {
             int c = fgetc(f);
-            while (c == '\r') c = fgetc(f);
+            while (c == '\r') c = fgetc(f); // Ignora o \r que o Windows coloca no final do arquivo
 
             TileType tipo;
             switch (c) {
-                case '#': tipo = TILE_PAREDE; break;
-                case 'D': tipo = TILE_PORTA;  break;
-                default:  tipo = TILE_CHAO;   break;
+                case '#': tipo = TILE_PAREDE; break; // # vira parede
+                case 'D': tipo = TILE_PORTA;  break; // D vira porta
+                default:  tipo = TILE_CHAO;   break; // O resto é chão (usei .)
             }
             s->grid[y][x].tipo   = tipo;
-            s->grid[y][x].solido = (tipo == TILE_PAREDE);
+            s->grid[y][x].solido = (tipo == TILE_PAREDE); // Parede é sólido, o resto não
 
             if (c == 'S') { // Salva spawn de jogador
                 s->spawn_jogador.x = x;
@@ -65,11 +62,11 @@ Sala* sala_carregar(const char* arquivo) {
             } else if (c == 'E' && s->num_inimigos < 16) { // Spawna um inimigo se já não tiver no cap
                 s->spawn_inimigos[s->num_inimigos].x = x;
                 s->spawn_inimigos[s->num_inimigos].y = y;
-                s->num_inimigos++;
+                s->num_inimigos++; // Salva posição do inimigo e passa pro pŕoximo índice
             } else if (c == 'I' && s->num_itens < 16) { // Spawna um item se já não tiver no cap
                 s->spawn_itens[s->num_itens].x = x;
                 s->spawn_itens[s->num_itens].y = y;
-                s->num_itens++;
+                s->num_itens++; // Salva a posição do item e passa pro próximo índice
             }
         }
         fgetc(f); // '\n'
@@ -93,6 +90,7 @@ bool sala_colisao(Sala* s, int x, int y) { // Não deixa o jogador escapar dos l
 }
 
 Direcao sala_direcao_porta(Sala* s, int x, int y) {
+    // Calcula distância da porta até as bordas (assim não precisa explicitar se ela é norte, sul, leste ou oeste)
     int dist_norte = y;
     int dist_sul   = s->altura  - 1 - y;
     int dist_oeste = x;
@@ -108,6 +106,7 @@ Direcao sala_direcao_porta(Sala* s, int x, int y) {
 
 const char* sala_saida_em(Sala* s, int x, int y) {
     switch (sala_direcao_porta(s, x, y)) {
+        // Retorna o caminho da sala destino (se não tiver é nulo)
         case DIR_CIMA:     return s->saida_norte[0] ? s->saida_norte : NULL;
         case DIR_BAIXO:    return s->saida_sul[0]   ? s->saida_sul   : NULL;
         case DIR_ESQUERDA: return s->saida_oeste[0] ? s->saida_oeste : NULL;
@@ -123,7 +122,7 @@ void sala_desenhar(Sala* s, int cam_x, int cam_y, int tamanho_tile, int cam_larg
             int mx = cam_x + x;
             if (mx >= s->largura || my >= s->altura) continue;
 
-            Color cor = s->grid[my][mx].solido ? YELLOW : BLACK;
+            Color cor = s->grid[my][mx].solido ? YELLOW : BLACK; // Se for parede é amarelo, se não for é preto
             DrawRectangle(x * tamanho_tile, y * tamanho_tile, tamanho_tile, tamanho_tile, cor);
         }
     }
