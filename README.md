@@ -66,7 +66,7 @@ Cada sala é um arquivo `.txt` com grid de caracteres:
 ```
 12 10
 N:mapa/salas/salaX.txt S: L:mapa/salas/salaY.txt O:
-############
+#####DD#####
 #..........#
 #....S.....#
 #..........#
