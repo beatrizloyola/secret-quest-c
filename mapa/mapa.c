@@ -116,7 +116,7 @@ const char* sala_saida_em(Sala* s, int x, int y) {
 }
 
 void sala_desenhar(Sala* s, int cam_x, int cam_y, int tamanho_tile, int cam_larg, int cam_alt) {
-    for (int y = 0; y < cam_alt; y++) { // Mexe a câmera quando muda de sala
+    for (int y = 0; y < cam_alt; y++) { // Desenha os tiles visíveis dentro da área da câmera
         int my = cam_y + y;
         for (int x = 0; x < cam_larg; x++) {
             int mx = cam_x + x;
