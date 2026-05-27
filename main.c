@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "types.h"
 #include "mapa/mapa.h"
+#include "entidade/entidade.h"
 
 #define TAMANHO_TILE  80
 #define CAMERA_LARGURA 12
