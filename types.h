@@ -11,7 +11,8 @@ typedef struct {
 
 typedef enum {
     TILE_CHAO,
-    TILE_PAREDE
+    TILE_PAREDE,
+    TILE_PORTA
 } TileType;
 
 typedef struct {
@@ -28,6 +29,10 @@ typedef struct {
     Vec2i spawn_itens[16];
     int num_itens;
     char arquivo[64];
+    char saida_norte[64];
+    char saida_sul[64];
+    char saida_leste[64];
+    char saida_oeste[64];
 } Sala;
 
 //define tipo de entidade

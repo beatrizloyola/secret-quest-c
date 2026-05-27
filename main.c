@@ -10,7 +10,7 @@ int main(void) {
     InitWindow(CAMERA_LARGURA * TAMANHO_TILE, CAMERA_ALTURA * TAMANHO_TILE, "Secret Quest");
     SetTargetFPS(60);
 
-    Sala* sala = sala_carregar("mapa/mapa.txt");
+    Sala* sala = sala_carregar("mapa/salas/sala1.txt");
 
     int playerX = sala->spawn_jogador.x;
     int playerY = sala->spawn_jogador.y;
@@ -33,6 +33,25 @@ int main(void) {
         if (!sala_colisao(sala, playerX + mx, playerY + my)) {
             playerX += mx;
             playerY += my;
+        }
+
+        // Troca de sala ao pisar em porta
+        if (sala->grid[playerY][playerX].tipo == TILE_PORTA) {
+            Direcao dir    = sala_direcao_porta(sala, playerX, playerY);
+            const char* proxima = sala_saida_em(sala, playerX, playerY);
+            if (proxima) {
+                Sala* nova = sala_carregar(proxima);
+                if (nova) {
+                    sala_descarregar(sala);
+                    sala = nova;
+                    switch (dir) {
+                        case DIR_CIMA:     playerY = sala->altura - 2; break;
+                        case DIR_BAIXO:    playerY = 1;                break;
+                        case DIR_DIREITA:  playerX = 1;                break;
+                        case DIR_ESQUERDA: playerX = sala->largura - 2; break;
+                    }
+                }
+            }
         }
 
         // Câmera trava por sala

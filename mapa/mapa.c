@@ -15,7 +15,31 @@ Sala* sala_carregar(const char* arquivo) {
     s->num_inimigos = 0; // Qtd inicial
     s->num_itens = 0;
 
-    fscanf(f, "%d %d\n", &s->largura, &s->altura); // Lê a primeira linha do txt para saber largura e altura da sala
+    fscanf(f, "%d %d", &s->largura, &s->altura);
+
+    s->saida_norte[0] = '\0';
+    s->saida_sul[0]   = '\0';
+    s->saida_leste[0] = '\0';
+    s->saida_oeste[0] = '\0';
+
+    char linha_saidas[256];
+    fgets(linha_saidas, sizeof(linha_saidas), f); // consume resto da linha 1
+
+    // Formato da 2ª linha: "N:arquivo S:arquivo L:arquivo O:arquivo"
+    // Campo vazio = sem saída nessa direção
+    if (fgets(linha_saidas, sizeof(linha_saidas), f)) {
+        char *tok = strtok(linha_saidas, " \t\r\n");
+        while (tok) {
+            if (tok[1] == ':') {
+                char *val = tok + 2;
+                if (tok[0] == 'N') strncpy(s->saida_norte, val, 63);
+                else if (tok[0] == 'S') strncpy(s->saida_sul,   val, 63);
+                else if (tok[0] == 'L') strncpy(s->saida_leste, val, 63);
+                else if (tok[0] == 'O') strncpy(s->saida_oeste, val, 63);
+            }
+            tok = strtok(NULL, " \t\r\n");
+        }
+    }
 
     s->grid = malloc(s->altura * sizeof(Tile*)); // Aloca uma altura por linha do mapa
     for (int y = 0; y < s->altura; y++) {
@@ -29,6 +53,7 @@ Sala* sala_carregar(const char* arquivo) {
             TileType tipo;
             switch (c) {
                 case '#': tipo = TILE_PAREDE; break;
+                case 'D': tipo = TILE_PORTA;  break;
                 default:  tipo = TILE_CHAO;   break;
             }
             s->grid[y][x].tipo   = tipo;
@@ -67,6 +92,30 @@ bool sala_colisao(Sala* s, int x, int y) { // Não deixa o jogador escapar dos l
     return s->grid[y][x].solido;
 }
 
+Direcao sala_direcao_porta(Sala* s, int x, int y) {
+    int dist_norte = y;
+    int dist_sul   = s->altura  - 1 - y;
+    int dist_oeste = x;
+    int dist_leste = s->largura - 1 - x;
+
+    int min = dist_norte;
+    Direcao dir = DIR_CIMA;
+    if (dist_sul   < min) { min = dist_sul;   dir = DIR_BAIXO;    }
+    if (dist_oeste < min) { min = dist_oeste; dir = DIR_ESQUERDA; }
+    if (dist_leste < min) {                   dir = DIR_DIREITA;  }
+    return dir;
+}
+
+const char* sala_saida_em(Sala* s, int x, int y) {
+    switch (sala_direcao_porta(s, x, y)) {
+        case DIR_CIMA:     return s->saida_norte[0] ? s->saida_norte : NULL;
+        case DIR_BAIXO:    return s->saida_sul[0]   ? s->saida_sul   : NULL;
+        case DIR_ESQUERDA: return s->saida_oeste[0] ? s->saida_oeste : NULL;
+        case DIR_DIREITA:  return s->saida_leste[0] ? s->saida_leste : NULL;
+    }
+    return NULL;
+}
+
 void sala_desenhar(Sala* s, int cam_x, int cam_y, int tamanho_tile, int cam_larg, int cam_alt) {
     for (int y = 0; y < cam_alt; y++) { // Mexe a câmera quando muda de sala
         int my = cam_y + y;
@@ -74,7 +123,7 @@ void sala_desenhar(Sala* s, int cam_x, int cam_y, int tamanho_tile, int cam_larg
             int mx = cam_x + x;
             if (mx >= s->largura || my >= s->altura) continue;
 
-            Color cor = s->grid[my][mx].solido ? YELLOW : BLACK; // Se for parede é amarelo, se for chão é preto
+            Color cor = s->grid[my][mx].solido ? YELLOW : BLACK;
             DrawRectangle(x * tamanho_tile, y * tamanho_tile, tamanho_tile, tamanho_tile, cor);
         }
     }

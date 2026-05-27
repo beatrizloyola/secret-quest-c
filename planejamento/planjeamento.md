@@ -4,7 +4,7 @@
 
 | Feature | Detalhe |
 |---|---|
-| Mapa | 1 estação com 12 salas (idêntica a do jogo original) |
+| Mapa | 1 estação com 16 salas (idêntica a do jogo original) |
 | Arquivo de mapa | Cada sala é um arquivo `.txt` com grid de caracteres |
 | Inimigos | 1 tipo apenas (alien simples com patrulha básica) |
 | Combate | Corpo a corpo: botão de ataque + hitbox curta + cooldown |
@@ -45,6 +45,7 @@ Exemplo: `sala_01.txt`
 | `S`       | Spawn do jogador         |
 | `E`       | Spawn de inimigo         |
 | `I`       | Item (`Código da Bomba`) |
+| `D`       | Porta para outra sala    |
 
 ---
 
@@ -338,7 +339,7 @@ void transicao_estado(
 
 | Dev   | Tarefa                      | Entregável             |
 | ----- | --------------------------- | ---------------------- |
-| Beatriz | Criar 4–6 salas e transição | Mapa navegável         |
+| Beatriz | Criar 16 salas e transição | Mapa navegável         |
 | Daniel | Spawn + movimento + IA      | Inimigos andando       |
 | Pedro | Sprites + HUD               | Tela de jogo funcional |
 
@@ -355,7 +356,7 @@ void transicao_estado(
 
 | Dev   | Tarefa                       | Entregável               |
 | ----- | ---------------------------- | ------------------------ |
-| Beatriz | Ajustar colisão     | Apresentação |
+| Beatriz | Ajustar colisão e portas     | Portas funcionando       |
 | Daniel | Implementar combate e coleta | Gameplay principal       |
 | Pedro | Ranking + Save/Load          | Persistência funcionando |
 
