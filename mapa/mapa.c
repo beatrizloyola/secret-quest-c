@@ -21,10 +21,9 @@ Sala* sala_carregar(const char* arquivo) {
     s->saida_oeste[0] = '\0';
 
     char linha_saidas[256];
-    fgets(linha_saidas, sizeof(linha_saidas), f); // consume resto da linha 1
+    fgets(linha_saidas, sizeof(linha_saidas), f); // Consume resto da linha 1
 
-    // Formato da 2ª linha: "N:arquivo S:arquivo L:arquivo O:arquivo"
-    // Campo vazio = sem saída nessa direção
+    // Formato da 2a linha: "N:arquivo S:arquivo L:arquivo O:arquivo". Campo vazio = sem saída nessa direção
     if (fgets(linha_saidas, sizeof(linha_saidas), f)) {
         char *tok = strtok(linha_saidas, " \t\r\n");
         while (tok) {
