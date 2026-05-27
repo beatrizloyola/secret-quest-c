@@ -92,19 +92,28 @@ bool sala_colisao(Sala* s, int x, int y) { // Não deixa o jogador escapar dos l
     return s->grid[y][x].solido;
 }
 
-const char* sala_saida_em(Sala* s, int x, int y) {
+Direcao sala_direcao_porta(Sala* s, int x, int y) {
     int dist_norte = y;
-    int dist_sul   = s->altura   - 1 - y;
+    int dist_sul   = s->altura  - 1 - y;
     int dist_oeste = x;
-    int dist_leste = s->largura  - 1 - x;
+    int dist_leste = s->largura - 1 - x;
 
     int min = dist_norte;
-    const char* saida = s->saida_norte;
-    if (dist_sul   < min) { min = dist_sul;   saida = s->saida_sul;   }
-    if (dist_oeste < min) { min = dist_oeste; saida = s->saida_oeste; }
-    if (dist_leste < min) {                   saida = s->saida_leste; }
+    Direcao dir = DIR_CIMA;
+    if (dist_sul   < min) { min = dist_sul;   dir = DIR_BAIXO;    }
+    if (dist_oeste < min) { min = dist_oeste; dir = DIR_ESQUERDA; }
+    if (dist_leste < min) {                   dir = DIR_DIREITA;  }
+    return dir;
+}
 
-    return saida[0] ? saida : NULL;
+const char* sala_saida_em(Sala* s, int x, int y) {
+    switch (sala_direcao_porta(s, x, y)) {
+        case DIR_CIMA:     return s->saida_norte[0] ? s->saida_norte : NULL;
+        case DIR_BAIXO:    return s->saida_sul[0]   ? s->saida_sul   : NULL;
+        case DIR_ESQUERDA: return s->saida_oeste[0] ? s->saida_oeste : NULL;
+        case DIR_DIREITA:  return s->saida_leste[0] ? s->saida_leste : NULL;
+    }
+    return NULL;
 }
 
 void sala_desenhar(Sala* s, int cam_x, int cam_y, int tamanho_tile, int cam_larg, int cam_alt) {
