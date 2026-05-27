@@ -1,10 +1,10 @@
-[ ] Structs
+[X] Structs
 
 [X] Ponteiros
 
-[ ] Alocação dinâmica de memória
+[X] Alocação dinâmica de memória
 
-[ ] Listas encadeadas
+[X] Listas encadeadas
 
 [X] Matrizes
 
