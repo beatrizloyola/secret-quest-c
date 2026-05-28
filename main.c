@@ -9,6 +9,148 @@
 #define CAMERA_LARGURA 12
 #define CAMERA_ALTURA  10
 
+/*
+Mudanças levemente drásticas no main.c pra permitir que o jogador e os inimigos se movam de maneira fluida, 
+além de integrar todo o sistema de lista encadeada e as trocentas funções q eu escrevi.
+Se tem um trecho q eu apaguei é pq tem uma função no entidades.c que faz a mesma coisa so q mais dificil.
+
+se eu quebrei alguma outra coisa q ja tava funcionando peço perdao
+*/
+
+static bool tile_livre_spawn(Sala* sala, int x, int y) { //verifica se uma tile pode receber o jogador depois de trocar de sala
+    if (sala == NULL) { //resenha ou morte! - dom pedro Iº
+        return false;
+    }
+
+    if (x < 0 || y < 0 || x >= sala->largura || y >= sala->altura) { //se saiu do mapa, não serve
+        return false;
+    }
+
+    if (sala->grid[y][x].tipo == TILE_PORTA) { //não spawna em cima da porta pra evitar loop infinito entre salas
+        return false;
+    }
+
+    return !sala_colisao(sala, x, y); //se não for parede, serve
+}
+
+static Direcao lado_entrada_sala_nova(Direcao dir_saida) { //converte a porta por onde saiu no lado por onde entra na sala nova
+    switch (dir_saida) {
+        case DIR_CIMA:     return DIR_BAIXO;
+        case DIR_BAIXO:    return DIR_CIMA;
+        case DIR_ESQUERDA: return DIR_DIREITA;
+        case DIR_DIREITA:  return DIR_ESQUERDA;
+    }
+
+    return DIR_BAIXO;
+}
+
+static bool procurar_spawn_na_entrada(Sala* sala, Direcao lado_entrada, int* out_x, int* out_y) { //procura uma tile livre logo depois da porta da sala nova
+    if (sala == NULL || out_x == NULL || out_y == NULL) { //tdah ou vagabundagem?
+        return false;
+    }
+
+    if (lado_entrada == DIR_ESQUERDA) { //entrou pelo lado esquerdo, então procura portas na coluna 0 e spawna pra dentro da sala
+        for (int y = 0; y < sala->altura; y++) {
+            if (sala->grid[y][0].tipo == TILE_PORTA) {
+                for (int x = 1; x < sala->largura; x++) {
+                    if (tile_livre_spawn(sala, x, y)) {
+                        *out_x = x;
+                        *out_y = y;
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    else if (lado_entrada == DIR_DIREITA) { //entrou pelo lado direito, então procura portas na última coluna e spawna pra dentro da sala
+        int porta_x = sala->largura - 1;
+        for (int y = 0; y < sala->altura; y++) {
+            if (sala->grid[y][porta_x].tipo == TILE_PORTA) {
+                for (int x = sala->largura - 2; x >= 0; x--) {
+                    if (tile_livre_spawn(sala, x, y)) {
+                        *out_x = x;
+                        *out_y = y;
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    else if (lado_entrada == DIR_CIMA) { //entrou por cima, então procura portas na linha 0 e spawna pra dentro da sala
+        for (int x = 0; x < sala->largura; x++) {
+            if (sala->grid[0][x].tipo == TILE_PORTA) {
+                for (int y = 1; y < sala->altura; y++) {
+                    if (tile_livre_spawn(sala, x, y)) {
+                        *out_x = x;
+                        *out_y = y;
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    else if (lado_entrada == DIR_BAIXO) { //entrou por baixo, então procura portas na última linha e spawna pra dentro da sala
+        int porta_y = sala->altura - 1;
+        for (int x = 0; x < sala->largura; x++) {
+            if (sala->grid[porta_y][x].tipo == TILE_PORTA) {
+                for (int y = sala->altura - 2; y >= 0; y--) {
+                    if (tile_livre_spawn(sala, x, y)) {
+                        *out_x = x;
+                        *out_y = y;
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+static bool procurar_spawn_fallback(Sala* sala, int* out_x, int* out_y) { //plano B caso alguma sala esteja sem porta do lado esperado
+    if (sala == NULL || out_x == NULL || out_y == NULL) { //ai dento
+        return false;
+    }
+
+    if (tile_livre_spawn(sala, sala->spawn_jogador.x, sala->spawn_jogador.y)) { //se o S da sala for válido, usa ele
+        *out_x = sala->spawn_jogador.x;
+        *out_y = sala->spawn_jogador.y;
+        return true;
+    }
+
+    for (int y = 0; y < sala->altura; y++) { //se der tudo errado ele procura qualquer chão livre na sala
+        for (int x = 0; x < sala->largura; x++) {
+            if (tile_livre_spawn(sala, x, y)) {
+                *out_x = x;
+                *out_y = y;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+static void posicionar_jogador_apos_porta(Sala* sala, Entidade* jogador, Direcao dir_saida) { //posiciona o jogador na entrada correta da sala nova, sem alterar o desenho das salas
+    if (sala == NULL || jogador == NULL) { //computador ligue a maquina de averiguar resenha
+        return;
+    }
+
+    int novo_x = jogador->pos.x;
+    int novo_y = jogador->pos.y;
+    Direcao lado_entrada = lado_entrada_sala_nova(dir_saida);
+
+    if (!procurar_spawn_na_entrada(sala, lado_entrada, &novo_x, &novo_y)) { //se não achou a porta esperada, usa fallback seguro
+        procurar_spawn_fallback(sala, &novo_x, &novo_y);
+    }
+
+    jogador->pos.x = novo_x;
+    jogador->pos.y = novo_y;
+    jogador->x = jogador->pos.x + 0.5f; //sincroniza posição real no centro da tile depois de trocar de sala
+    jogador->y = jogador->pos.y + 0.5f; //ler comentario acima
+}
+
+
 int main(void) {
     InitWindow(CAMERA_LARGURA * TAMANHO_TILE, CAMERA_ALTURA * TAMANHO_TILE, "Secret Quest");
     SetTargetFPS(60);
@@ -16,11 +158,11 @@ int main(void) {
     menu_inicializar();
     EstadoJogo estado = ESTADO_MENU;
     Sala* sala = NULL;
-    int playerX = 0, playerY = 0;
+    ListaEntidades* entidades = NULL;
+    Entidade* jogador = NULL;
     int score = 0;
-    int player_hp = 10;        // placeholder para integracao com lista de entidades
     int player_oxigenio = 100; // placeholder
-    int player_energia = 100; //placeholder
+    bool bloquear_enter_menu = false; //evita que o ENTER do game over já aperte "iniciar jogo" no menu
 
 
     while (!WindowShouldClose()) {
@@ -28,7 +170,15 @@ int main(void) {
         switch (estado) {
 
             case ESTADO_MENU:
-                menu_atualizar(&estado);
+                if (bloquear_enter_menu) { //se veio do game over, espera soltar ENTER antes do menu aceitar input (tava bugado antes)
+                    if (!IsKeyDown(KEY_ENTER)) {
+                        bloquear_enter_menu = false;
+                    }
+                }
+                else {
+                    menu_atualizar(&estado);
+                }
+
                 BeginDrawing();
                 menu_desenhar();
                 EndDrawing();
@@ -38,71 +188,72 @@ int main(void) {
                 if (sala == NULL) {
                     sala = sala_carregar("mapa/salas/sala1.txt");
                     if (sala) {
-                        playerX = sala->spawn_jogador.x;
-                        playerY = sala->spawn_jogador.y;
+                        entidades = lista_criar();
+                        lista_spawnar_sala(entidades, sala, &jogador);
                     }
                 }
 
-                if (!sala) break;
+                if (!sala || !entidades || !jogador) break;
 
                 if (IsKeyPressed(KEY_TAB)) {
                     sistema_transicao(&estado, ESTADO_PAUSE);
                     break;
                 }
 
-                // Limites do mapa
-                if (playerX < 0) playerX = 0;
-                if (playerY < 0) playerY = 0;
-                if (playerX >= sala->largura)  playerX = sala->largura  - 1;
-                if (playerY >= sala->altura) playerY = sala->altura - 1;
+                float dt = GetFrameTime();
 
-                // Input
-                int mx = 0, my = 0;
-                if (IsKeyPressed(KEY_RIGHT)) mx++;
-                if (IsKeyPressed(KEY_LEFT))  mx--;
-                if (IsKeyPressed(KEY_DOWN))  my++;
-                if (IsKeyPressed(KEY_UP))    my--;
+                entidade_mover_jogador(jogador, sala, dt); //movimentação
 
-                if (!sala_colisao(sala, playerX + mx, playerY + my)) {
-                    playerX += mx;
-                    playerY += my;
+                if (IsKeyPressed(KEY_SPACE)) { //porrada 💥💥
+                    entidade_atacar(jogador, entidades, sala, 1, &score);
+                }
+
+                lista_atualizar(entidades, sala, jogador, dt, &score, &estado); //atualiza IA, dano, cooldown e coleta de item
+
+                if (estado != ESTADO_JOGANDO) {
+                    break;
                 }
 
                 // Troca de sala ao pisar em porta
-                if (sala->grid[playerY][playerX].tipo == TILE_PORTA) {
-                    Direcao dir    = sala_direcao_porta(sala, playerX, playerY);
-                    const char* proxima = sala_saida_em(sala, playerX, playerY);
+                //mudou pouca coisa, ele pega o "centro" aproximado do jogador (jogador->pos.x/.y) e verifica se ta numa tile que seria a porta
+                if (sala->grid[jogador->pos.y][jogador->pos.x].tipo == TILE_PORTA) {
+                    Direcao dir    = sala_direcao_porta(sala, jogador->pos.x, jogador->pos.y);
+                    const char* proxima = sala_saida_em(sala, jogador->pos.x, jogador->pos.y);
                     if (proxima) {
                         Sala* nova = sala_carregar(proxima);
                         if (nova) {
+                            int hp_anterior = jogador->hp; //guarda a vida antes de destruir a lista da sala antiga
+
+                            if (entidades) { //limpa as entidades da sala q vai ser descarregada pra n quebrar a rebimboca da parafuseta, mesmo comentario se aplica pra todas as vezes q isso aparecer
+                                lista_limpar(entidades); 
+                            }
                             sala_descarregar(sala);
                             sala = nova;
-                            switch (dir) {
-                                case DIR_CIMA:     playerY = sala->altura - 2; break;
-                                case DIR_BAIXO:    playerY = 1;                break;
-                                case DIR_DIREITA:  playerX = 1;                break;
-                                case DIR_ESQUERDA: playerX = sala->largura - 2; break;
-                            }
+
+                            entidades = lista_criar(); //cria novas entidades na sala nova
+                            lista_spawnar_sala(entidades, sala, &jogador);
+
+                            jogador->hp = hp_anterior; //mantém a vida do jogador ao trocar de sala
+                            posicionar_jogador_apos_porta(sala, jogador, dir); //evita q o bichinho apareça dentro da parede
                         }
                     }
                 }
 
                 // Camera trava por sala
-                int cameraX = (playerX / CAMERA_LARGURA) * CAMERA_LARGURA;
-                int cameraY = (playerY / CAMERA_ALTURA)  * CAMERA_ALTURA;
-                if (cameraX > sala->largura  - CAMERA_LARGURA) cameraX = sala->largura  - CAMERA_LARGURA;
-                if (cameraY > sala->altura - CAMERA_ALTURA)  cameraY = sala->altura - CAMERA_ALTURA;
+                int cameraX = (jogador->pos.x / CAMERA_LARGURA) * CAMERA_LARGURA;
+                int cameraY = (jogador->pos.y / CAMERA_ALTURA)  * CAMERA_ALTURA;
+                if (cameraX > sala->largura  - CAMERA_LARGURA) {
+                    cameraX = sala->largura  - CAMERA_LARGURA;
+                }
+                if (cameraY > sala->altura - CAMERA_ALTURA)  {
+                    cameraY = sala->altura - CAMERA_ALTURA;
+                }
                 
                 // Renderizacao
                 BeginDrawing();
                     ClearBackground(DARKGRAY);
                     sala_desenhar(sala, cameraX, cameraY, TAMANHO_TILE, CAMERA_LARGURA, CAMERA_ALTURA);
-                    DrawRectangle(
-                        (playerX - cameraX) * TAMANHO_TILE,
-                        (playerY - cameraY) * TAMANHO_TILE,
-                        TAMANHO_TILE, TAMANHO_TILE,
-                        BLUE
-                    );
+                    lista_desenhar(entidades, sala, cameraX, cameraY, TAMANHO_TILE);
                 EndDrawing();
                 break;
             }
@@ -112,7 +263,7 @@ int main(void) {
                 BeginDrawing();
                 tela_pause_desenhar(
                     sala ? sala->arquivo : NULL,
-                    player_hp,
+                    jogador ? jogador->hp : 0,
                     score,
                     player_oxigenio
                 );
@@ -125,6 +276,30 @@ int main(void) {
                 tela_ranking_desenhar();
                 EndDrawing();
                 break;
+
+            case ESTADO_GAME_OVER:
+                BeginDrawing();
+                ClearBackground(BLACK);
+                DrawText("GAME OVER", 260, 250, 40, RED);
+                DrawText("Pressione ENTER para voltar ao menu", 250, 320, 20, WHITE);
+                EndDrawing();
+
+                if (IsKeyPressed(KEY_ENTER)) {
+                    if (entidades) {
+                        lista_limpar(entidades);
+                        entidades = NULL;
+                    }
+
+                    if (sala) {
+                        sala_descarregar(sala);
+                        sala = NULL;
+                    }
+
+                    jogador = NULL;
+                    bloquear_enter_menu = true;
+                    sistema_transicao(&estado, ESTADO_MENU);
+                }
+                break;
                 
             default:
                 BeginDrawing();
@@ -133,7 +308,12 @@ int main(void) {
                 break;
         }
     }
-    if (sala) sala_descarregar(sala);
+    if (entidades) {
+        lista_limpar(entidades);
+    }
+    if (sala) {
+        sala_descarregar(sala);
+    }
     menu_finalizar();
     CloseWindow();
     return 0;
