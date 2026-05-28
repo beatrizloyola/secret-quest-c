@@ -64,6 +64,7 @@ typedef struct Entidade {
     bool vivo;
     float timer_ataque; //timer_ataque;
     float timer_movimento; //timer pra controlar a patrulha do inimigo
+    float timer_mudar_direcao; //timer pra IA mudar de direção voluntariamente enquanto anda
     struct Entidade* next; //próxima entidade da lista
 } Entidade;
 

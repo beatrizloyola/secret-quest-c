@@ -116,6 +116,28 @@ static Direcao inverter_direcao(Direcao direcao) { //inverte a direção quando 
     return DIR_DIREITA;
 }
 
+static void inimigo_mudar_direcao(Entidade* inimigo, Sala* sala) { //faz o inimigo tentar mudar de direção sozinho, igual no jogo original
+    if (inimigo == NULL || sala == NULL) { //sem inimigo ou sala não tem como decidir caminho
+        return;
+    }
+
+    for (int tentativa = 0; tentativa < 4; tentativa++) { //tenta algumas direções antes de desistir
+        Direcao nova_direcao = (Direcao)GetRandomValue(0, 3);
+        int dx, dy;
+        direcao_para_delta(nova_direcao, &dx, &dy);
+
+        float teste_x = inimigo->x + dx * 0.25f;
+        float teste_y = inimigo->y + dy * 0.25f;
+
+        if (!entidade_colide_mapa(inimigo, sala, teste_x, teste_y, true)) { //só troca se a direção nova não jogar ele direto na parede
+            inimigo->direcao = nova_direcao;
+            break;
+        }
+    }
+
+    inimigo->timer_mudar_direcao = GetRandomValue(45, 110) / 100.0f; //próxima troca voluntária entre 0.45s e 1.10s
+}
+
 ListaEntidades* lista_criar(void) { //criação de lista encadeada pras entidades
     ListaEntidades* lista = malloc(sizeof(ListaEntidades));
 
@@ -150,6 +172,7 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
 
     entidade->timer_ataque = 0.0f;  //
     entidade->timer_movimento = 0.0f; //timer usado pelo inimigo pra patrulhar sem andar rápido demais
+    entidade->timer_mudar_direcao = 0.0f; //timer usado pra inimigo mudar de direção sem precisar bater na parede
 
     entidade->next = NULL;
 
@@ -157,14 +180,15 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
         entidade->max_hp = 10;
         entidade->hp = 10;
         entidade->ataque = 2;
-        entidade->velocidade = 3.2f; //velocidade em tiles por segundo
+        entidade->velocidade = 6.5f;
     }
     else if (tipo == ENT_INIMIGO) { //se nao, se o tipo for inimigo:
         entidade->max_hp = 3;
         entidade->hp = 3;
         entidade->ataque = 1;
         entidade->direcao = DIR_DIREITA;
-        entidade->velocidade = 1.2f; //inimigo anda mais devagar que o jogador
+        entidade->velocidade = 6.5f;
+        entidade->timer_mudar_direcao = GetRandomValue(45, 75) / 100.0f;
     }
     else {                          //se nao, o tipo é item:
         entidade->max_hp = 1;
@@ -366,6 +390,11 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
             if (atual->timer_movimento < 0.0f) atual->timer_movimento = 0.0f;
         }
 
+        if (atual->timer_mudar_direcao > 0.0f) {
+            atual->timer_mudar_direcao -= dt;
+            if (atual->timer_mudar_direcao < 0.0f) atual->timer_mudar_direcao = 0.0f;
+        }
+
         if (atual->tipo == ENT_INIMIGO && atual->vivo) {
             if ((entidades_encostando(atual, jogador) || distancia_manhattan(atual, jogador) <= 0) && atual->timer_ataque <= 0.0f) { //se encostar no jogador, dá dano com cooldown
                 jogador->hp -= atual->ataque;
@@ -379,6 +408,10 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
                         *estado = ESTADO_GAME_OVER;
                     }
                 }
+            }
+
+            if (atual->timer_mudar_direcao <= 0.0f) { //além de inverter na parede, o inimigo também muda de direção por vontade própria
+                inimigo_mudar_direcao(atual, sala);
             }
 
             if (atual->timer_movimento <= 0.0f) { //anda todo frame, se bater em parede ou porta inverte
