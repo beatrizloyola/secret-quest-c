@@ -69,3 +69,33 @@ typedef struct {
 } ListaEntidades;
 
 #endif
+
+
+// SISTEMA
+
+// Diferentes estados de jogo
+typedef enum {
+    ESTADO_MENU,        // tela inicial
+    ESTADO_JOGANDO,     // tela de jogo
+    ESTADO_PAUSE,      // tela de menu/pause
+    ESTADO_RANKING,     // informação de rankin
+    ESTADO_GAME_OVER,   // fim do jogo (morreu)
+    ESTADO_VITORIA      // fim do jogo (ganhou)
+} EstadoJogo;
+
+// Template de Recorde
+typedef struct {
+    char nome[16];
+    int score;
+} Recorde;
+
+// Estado de jogo
+typedef struct {
+    Sala * sala_atual;
+    ListaEntidades * entidades;
+    Entidade * jogador;
+    int score;
+    EstadoJogo estado;
+    int cam_x;
+    int cam_y;
+} Jogo;
