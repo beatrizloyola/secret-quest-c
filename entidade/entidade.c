@@ -2,11 +2,124 @@
 #include <stdlib.h>
 #include <raylib.h>
 #include "entidade.h"
+#include "../mapa/mapa.h"
+
+//As funções à seguir usam static pq elas só são usadas nesse arquivo aqui, não preciso chamar elas em lugar nenhum depois disso
+
+static float valor_absoluto(float valor) { //retorna o valor positivo, usado pra medir distância entre as hitboxes
+    if (valor < 0.0f) {
+        return -valor;
+    }
+
+    return valor;
+}
+
+static float entidade_raio(Entidade* entidade) { //define o tamanho da hitbox da entidade em tiles
+    if (entidade == NULL) { //"entrarao no meu codigo e lerao meus comentarios" - napoleao bonaparte
+        return 0.0f;
+    }
+
+    if (entidade->tipo == ENT_ITEM) { //item tem hitbox menor pra parecer coletável
+        return 0.22f;
+    }
+
+    return 0.32f; //jogador e inimigo ocupam um pouco menos que 1 tile
+}
+
+static void entidade_sincronizar_tile(Entidade* entidade) { //atualiza a posição inteira em tile usando o centro real da entidade
+    if (entidade == NULL) { //macarram :V
+        return;
+    }
+
+    entidade->pos.x = (int)entidade->x;
+    entidade->pos.y = (int)entidade->y;
+}
+
+static int distancia_manhattan(Entidade* a, Entidade* b) { //calcula distância em tiles sem diagonal
+    int dx = a->pos.x - b->pos.x;
+    int dy = a->pos.y - b->pos.y;
+
+    if (dx < 0) dx = -dx;
+    if (dy < 0) dy = -dy;
+
+    return dx + dy;
+}
+
+static bool entidades_encostando(Entidade* a, Entidade* b) { //verifica contato usando hitbox simples de retângulo
+    if (a == NULL || b == NULL) { //onde fica o ´ em révéíllón?
+        return false;
+    }
+
+    float soma_raios = entidade_raio(a) + entidade_raio(b);
+    float dx = valor_absoluto(a->x - b->x);
+    float dy = valor_absoluto(a->y - b->y);
+
+    return dx <= soma_raios && dy <= soma_raios;
+}
+
+static bool entidade_colide_mapa(Entidade* entidade, Sala* sala, float novo_x, float novo_y, bool bloquear_porta) { //testa se a hitbox da entidade bate no mapa
+    if (entidade == NULL || sala == NULL) { //早上好中国 现在我有冰淇淋🍦我很喜欢冰淇淋🍦
+        return true;
+    }
+
+    float raio = entidade_raio(entidade);
+
+    float esquerda_real = novo_x - raio;
+    float direita_real = novo_x + raio;
+    float cima_real = novo_y - raio;
+    float baixo_real = novo_y + raio;
+
+    if (esquerda_real < 0.0f || cima_real < 0.0f || direita_real >= sala->largura || baixo_real >= sala->altura) {
+        return true;
+    }
+
+    int esquerda = (int)esquerda_real;
+    int direita = (int)direita_real;
+    int cima = (int)cima_real;
+    int baixo = (int)baixo_real;
+
+    for (int y = cima; y <= baixo; y++) { //testa todos os tiles tocados pela hitbox
+        for (int x = esquerda; x <= direita; x++) {
+            if (sala_colisao(sala, x, y)) { //parede bloqueia qualquer entidade
+                return true;
+            }
+
+            if (bloquear_porta && sala->grid[y][x].tipo == TILE_PORTA) { //inimigo não atravessa porta sozinho
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+static void direcao_para_delta(Direcao direcao, int* dx, int* dy) { //converte direção em movimento x/y
+    *dx = 0;
+    *dy = 0;
+
+    switch (direcao) {
+        case DIR_CIMA:     *dy = -1; break;
+        case DIR_BAIXO:    *dy = 1;  break;
+        case DIR_ESQUERDA: *dx = -1; break;
+        case DIR_DIREITA:  *dx = 1;  break;
+    }
+}
+
+static Direcao inverter_direcao(Direcao direcao) { //inverte a direção quando o inimigo bate em parede ou porta
+    switch (direcao) {
+        case DIR_CIMA:     return DIR_BAIXO;
+        case DIR_BAIXO:    return DIR_CIMA;
+        case DIR_ESQUERDA: return DIR_DIREITA;
+        case DIR_DIREITA:  return DIR_ESQUERDA;
+    }
+
+    return DIR_DIREITA;
+}
 
 ListaEntidades* lista_criar(void) { //criação de lista encadeada pras entidades
     ListaEntidades* lista = malloc(sizeof(ListaEntidades));
 
-    if (lista == NULL) {
+    if (lista == NULL) { //"penso logo farmo aura" - rené descartes
         return NULL;
     }
 
@@ -19,7 +132,7 @@ ListaEntidades* lista_criar(void) { //criação de lista encadeada pras entidade
 Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entidade, pega tipo e posição
     Entidade* entidade = malloc(sizeof(Entidade));
 
-    if (entidade == NULL) {
+    if (entidade == NULL) { //go drinking🍻 (vai tomando)
         return NULL;
     }
 
@@ -28,11 +141,15 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
     entidade->pos.x = x;
     entidade->pos.y = y;
 
+    entidade->x = x + 0.5f; //posição real começa no centro do tile de spawn
+    entidade->y = y + 0.5f; //posição real começa no centro do tile de spawn
+
     entidade->vivo = true;          //booleano que vai ser setado pra false caso a entidade "morra" (item coletado ou hp<=0)
 
     entidade->direcao = DIR_BAIXO;  // só pra padronizar, ela spawna "olhando" pra baixo
 
     entidade->timer_ataque = 0.0f;  //
+    entidade->timer_movimento = 0.0f; //timer usado pelo inimigo pra patrulhar sem andar rápido demais
 
     entidade->next = NULL;
 
@@ -40,16 +157,20 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
         entidade->max_hp = 10;
         entidade->hp = 10;
         entidade->ataque = 2;
+        entidade->velocidade = 3.2f; //velocidade em tiles por segundo
     }
     else if (tipo == ENT_INIMIGO) { //se nao, se o tipo for inimigo:
         entidade->max_hp = 3;
         entidade->hp = 3;
         entidade->ataque = 1;
+        entidade->direcao = DIR_DIREITA;
+        entidade->velocidade = 1.2f; //inimigo anda mais devagar que o jogador
     }
     else {                          //se nao, o tipo é item:
         entidade->max_hp = 1;
         entidade->hp = 1;
         entidade->ataque = 0;
+        entidade->velocidade = 0.0f;
     }
 
     return entidade;
@@ -114,4 +235,218 @@ void lista_limpar(ListaEntidades* lista) { //apaga a lista e libera o espaço al
     lista->contagem = 0;
 
     free(lista);
+}
+
+void lista_spawnar_sala(ListaEntidades* lista, Sala* sala, Entidade** jogador) { //cria as entidades usando os spawns que o mapa leu do .txt
+    if (lista == NULL || sala == NULL) { //mortamdela :O
+        return;
+    }
+
+    Entidade* novo_jogador = entidade_criar(ENT_JOGADOR, sala->spawn_jogador.x, sala->spawn_jogador.y);
+    lista_adicionar(lista, novo_jogador);
+
+    if (jogador != NULL) { //guarda um ponteiro direto pro jogador pra não precisar procurar na lista toda hora
+        *jogador = novo_jogador;
+    }
+
+    for (int i = 0; i < sala->num_inimigos; i++) { //cada E no .txt vira um inimigo
+        Entidade* inimigo = entidade_criar(ENT_INIMIGO, sala->spawn_inimigos[i].x, sala->spawn_inimigos[i].y);
+        lista_adicionar(lista, inimigo);
+    }
+
+    for (int i = 0; i < sala->num_itens; i++) { //cada I no .txt vira um item
+        Entidade* item = entidade_criar(ENT_ITEM, sala->spawn_itens[i].x, sala->spawn_itens[i].y);
+        lista_adicionar(lista, item);
+    }
+}
+
+void entidade_mover_jogador(Entidade* jogador, Sala* sala, float dt) { //movimenta o jogador de forma fluida enquanto a tecla estiver pressionada
+    if (jogador == NULL || sala == NULL) { //cala breza :p
+        return;
+    }
+
+    float dx = 0.0f;
+    float dy = 0.0f;
+
+    // Mantém 4 direções, sem diagonal, pra ficar mais próximo do controle de Atari
+    if (IsKeyDown(KEY_RIGHT)) {
+        dx = 1.0f;
+        jogador->direcao = DIR_DIREITA;
+    }
+    else if (IsKeyDown(KEY_LEFT)) {
+        dx = -1.0f;
+        jogador->direcao = DIR_ESQUERDA;
+    }
+    else if (IsKeyDown(KEY_DOWN)) {
+        dy = 1.0f;
+        jogador->direcao = DIR_BAIXO;
+    }
+    else if (IsKeyDown(KEY_UP)) {
+        dy = -1.0f;
+        jogador->direcao = DIR_CIMA;
+    }
+
+    float novo_x = jogador->x + dx * jogador->velocidade * dt;
+    float novo_y = jogador->y + dy * jogador->velocidade * dt;
+
+    if (!entidade_colide_mapa(jogador, sala, novo_x, jogador->y, false)) { //move no eixo x se não bater em parede
+        jogador->x = novo_x;
+    }
+
+    if (!entidade_colide_mapa(jogador, sala, jogador->x, novo_y, false)) { //move no eixo y se não bater em parede
+        jogador->y = novo_y;
+    }
+
+    entidade_sincronizar_tile(jogador); //mantém pos.x/pos.y coerentes pro ataque, porta e coleta
+}
+
+void entidade_atacar(Entidade* atacante, ListaEntidades* alvos, Sala* sala, int alcance, int* score) { //ataque corpo a corpo em linha reta na direção que o jogador tá olhando
+    if (atacante == NULL || alvos == NULL || sala == NULL) { //peperoni :T
+        return;
+    }
+
+    if (atacante->timer_ataque > 0.0f) { //cooldown pra não spammar ataque
+        return;
+    }
+
+    int dx, dy;
+    direcao_para_delta(atacante->direcao, &dx, &dy);
+
+    atacante->timer_ataque = 0.35f;
+
+    for (int i = 1; i <= alcance; i++) { //verifica 1, 2 e 3 tiles na frente do jogador
+        int alvo_x = atacante->pos.x + dx * i;
+        int alvo_y = atacante->pos.y + dy * i;
+
+        if (sala_colisao(sala, alvo_x, alvo_y)) { //não atravessa parede
+            return;
+        }
+
+        Entidade* atual = alvos->head;
+
+        while (atual != NULL) {
+            if (atual->tipo == ENT_INIMIGO && atual->vivo && atual->pos.x == alvo_x && atual->pos.y == alvo_y) {
+                atual->hp -= atacante->ataque;
+
+                if (atual->hp <= 0) { //se o hp zerar, inimigo morre e sai da lista
+                    atual->vivo = false;
+
+                    if (score != NULL) {
+                        *score += 100;
+                    }
+
+                    lista_remover(alvos, atual);
+                }
+
+                return;
+            }
+
+            atual = atual->next;
+        }
+    }
+}
+
+void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float dt, int* score, EstadoJogo* estado) { //atualiza cooldown, IA inimiga, dano por contato e coleta de item
+    if (lista == NULL || sala == NULL || jogador == NULL) { //inhame (acabarm as ideias) :l
+        return;
+    }
+
+    Entidade* atual = lista->head;
+
+    while (atual != NULL) {
+        Entidade* proximo = atual->next; //guarda o próximo antes, porque item pode ser removido no meio do loop
+
+        if (atual->timer_ataque > 0.0f) {
+            atual->timer_ataque -= dt;
+            if (atual->timer_ataque < 0.0f) atual->timer_ataque = 0.0f;
+        }
+
+        if (atual->timer_movimento > 0.0f) {
+            atual->timer_movimento -= dt;
+            if (atual->timer_movimento < 0.0f) atual->timer_movimento = 0.0f;
+        }
+
+        if (atual->tipo == ENT_INIMIGO && atual->vivo) {
+            if ((entidades_encostando(atual, jogador) || distancia_manhattan(atual, jogador) <= 0) && atual->timer_ataque <= 0.0f) { //se encostar no jogador, dá dano com cooldown
+                jogador->hp -= atual->ataque;
+                atual->timer_ataque = 1.0f;
+
+                if (jogador->hp <= 0) { //se o jogador morrer, vai pra tela de game over
+                    jogador->hp = 0;
+                    jogador->vivo = false;
+
+                    if (estado != NULL) {
+                        *estado = ESTADO_GAME_OVER;
+                    }
+                }
+            }
+
+            if (atual->timer_movimento <= 0.0f) { //anda todo frame, se bater em parede ou porta inverte
+                int dx, dy;
+                direcao_para_delta(atual->direcao, &dx, &dy);
+
+                float novo_x = atual->x + dx * atual->velocidade * dt;
+                float novo_y = atual->y + dy * atual->velocidade * dt;
+
+                if (entidade_colide_mapa(atual, sala, novo_x, novo_y, true)) {
+                    atual->direcao = inverter_direcao(atual->direcao);
+                    atual->timer_movimento = 0.15f; //pequena pausa depois de bater, pra patrulha não tremer na parede
+                }
+                else {
+                    atual->x = novo_x;
+                    atual->y = novo_y;
+                    entidade_sincronizar_tile(atual);
+                }
+            }
+        }
+        else if (atual->tipo == ENT_ITEM && atual->vivo) {
+            if (entidades_encostando(atual, jogador)) { //se o jogador encostar no item, coleta
+                atual->vivo = false;
+
+                if (score != NULL) {
+                    *score += 250;
+                }
+
+                lista_remover(lista, atual);
+            }
+        }
+
+        atual = proximo;
+    }
+}
+
+void lista_desenhar(ListaEntidades* lista, int cam_x, int cam_y, int tamanho_tile) { //desenha jogador, inimigos e itens como quadrados coloridos por enquanto
+    if (lista == NULL) { //mandeoca :I
+        return;
+    }
+
+    Entidade* atual = lista->head;
+
+    while (atual != NULL) {
+        Color cor = WHITE;
+
+        if (atual->tipo == ENT_JOGADOR) {
+            cor = BLUE;
+        }
+        else if (atual->tipo == ENT_INIMIGO) {
+            cor = RED;
+        }
+        else if (atual->tipo == ENT_ITEM) {
+            cor = GREEN;
+        }
+
+        float tamanho_entidade = entidade_raio(atual) * 2.0f * tamanho_tile;
+        float tela_x = (atual->x - cam_x) * tamanho_tile - tamanho_entidade / 2.0f;
+        float tela_y = (atual->y - cam_y) * tamanho_tile - tamanho_entidade / 2.0f;
+
+        DrawRectangle(
+            (int)tela_x,
+            (int)tela_y,
+            (int)tamanho_entidade,
+            (int)tamanho_entidade,
+            cor
+        );
+
+        atual = atual->next;
+    }
 }

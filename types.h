@@ -53,13 +53,17 @@ typedef enum {
 
 typedef struct Entidade {
     EntTipo tipo; //saber o tipo da entidade (jogador, inimigo ou item)
-    Vec2i pos; //saber a posição
+    Vec2i pos; //saber a posição em tile aproximado
+    float x; //posição real/fracionada em tiles no eixo x, usada pra movimento fluido
+    float y; //posição real/fracionada em tiles no eixo y, usada pra movimento fluido
+    float velocidade; //velocidade da entidade em tiles por segundo
     int hp; //quanto de hp tem agr
     int max_hp; //quanto de hp maximo tem
     int ataque; //quanto de dano dá
     Direcao direcao; //saber a direção
     bool vivo;
     float timer_ataque;
+    float timer_movimento; //timer pra controlar a patrulha do inimigo
     struct Entidade* next; //próxima entidade da lista
 } Entidade;
 

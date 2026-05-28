@@ -12,12 +12,16 @@ void lista_remover(ListaEntidades* lista, Entidade* alvo); //remove entidade da 
 
 void lista_limpar(ListaEntidades* lista); //free na lista inteira
 
-//void lista_atualizar(ListaEntidades* lista, Sala* sala, float dt); //TBA
+void lista_spawnar_sala(ListaEntidades* lista, Sala* sala, Entidade** jogador); //cria jogador, inimigos e itens a partir dos spawns da sala
 
-//void lista_desenhar(ListaEntidades* lista, int cam_x, int cam_y, Texture2D* sprites); //TBA
+void entidade_mover_jogador(Entidade* jogador, Sala* sala, float dt); //movimenta o jogador de forma fluida usando posição fracionada
+
+void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float dt, int* score, EstadoJogo* estado); //atualiza inimigos, cooldowns, dano por contato e coleta de item
+
+void lista_desenhar(ListaEntidades* lista, int cam_x, int cam_y, int tamanho_tile); //desenha todas as entidades da lista
 
 Entidade* entidade_criar(EntTipo tipo, int x, int y); //cria uma entidade
 
-//void entidade_atacar(Entidade* atacante, ListaEntidades* alvos, Sala* sala); //TBA
+void entidade_atacar(Entidade* atacante, ListaEntidades* alvos, Sala* sala, int alcance, int* score); //ataca até 3 tiles na direção que a entidade tá olhando
 
 #endif
