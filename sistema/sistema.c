@@ -41,12 +41,12 @@ void menu_desenhar(void) {
 }
 
 // Menu Pause
-void tela_status_atualizar(EstadoJogo* estado) {
+void tela_pause_atualizar(EstadoJogo* estado) {
     if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_ENTER)) {
         sistema_transicao(estado, ESTADO_JOGANDO);
     }
 }
-void tela_status_desenhar(const char* nome_sala, int hp, int score, int oxigenio) {
+void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio) {
     ClearBackground(DARKBLUE);
     DrawText("STATUS DO ASTRONAUTA", 80, 60, 30, YELLOW);
     // Placeholders com layout limpo
