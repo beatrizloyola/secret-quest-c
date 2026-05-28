@@ -1,7 +1,7 @@
 #ifndef SISTEMA_H
 #define SISTEMA_H
 
-#include "types.h"
+#include "../types.h"
 
 // Tela de menu principal
 void menu_inicializar(void);
