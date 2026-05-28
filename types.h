@@ -68,9 +68,6 @@ typedef struct {
     int contagem;
 } ListaEntidades;
 
-#endif
-
-
 // SISTEMA
 
 // Diferentes estados de jogo
@@ -99,3 +96,5 @@ typedef struct {
     int cam_x;
     int cam_y;
 } Jogo;
+
+#endif
