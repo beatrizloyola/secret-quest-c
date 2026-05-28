@@ -62,7 +62,7 @@ typedef struct Entidade {
     int ataque; //quanto de dano dá
     Direcao direcao; //saber a direção
     bool vivo;
-    float timer_ataque;
+    float timer_ataque; //timer_ataque;
     float timer_movimento; //timer pra controlar a patrulha do inimigo
     struct Entidade* next; //próxima entidade da lista
 } Entidade;

@@ -44,7 +44,7 @@ Sala* sala_carregar(const char* arquivo) {
 
         for (int x = 0; x < s->largura; x++) {
             int c = fgetc(f);
-            while (c == '\r') c = fgetc(f); // Ignora o \r que o Windows coloca no final do arquivo
+            while (c == '\r' || c == '\n') c = fgetc(f); // Ignora o \r e \n que o Windows coloca no final do arquivo
 
             TileType tipo;
             switch (c) {

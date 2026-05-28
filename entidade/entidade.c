@@ -268,7 +268,7 @@ void entidade_mover_jogador(Entidade* jogador, Sala* sala, float dt) { //movimen
     float dx = 0.0f;
     float dy = 0.0f;
 
-    // Mantém 4 direções, sem diagonal, pra ficar mais próximo do controle de Atari
+    //IsKeyDown continua verdadeiro enquanto a tecla estiver pressionada, por isso é melhor pra movimentação
     if (IsKeyDown(KEY_RIGHT)) {
         dx = 1.0f;
         jogador->direcao = DIR_DIREITA;
@@ -415,7 +415,7 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
     }
 }
 
-void lista_desenhar(ListaEntidades* lista, int cam_x, int cam_y, int tamanho_tile) { //desenha jogador, inimigos e itens como quadrados coloridos por enquanto
+void lista_desenhar(ListaEntidades* lista, int cam_x, int cam_y, int tamanho_tile) { //desenha jogador, inimigos e itens como quadrados infelizes por enquanto
     if (lista == NULL) { //mandeoca :I
         return;
     }
