@@ -22,6 +22,6 @@ void lista_desenhar(ListaEntidades* lista, Sala* sala, int cam_x, int cam_y, int
 
 Entidade* entidade_criar(EntTipo tipo, int x, int y); //cria uma entidade
 
-void entidade_atacar(Entidade* atacante, ListaEntidades* alvos, Sala* sala, int alcance, int* score); //ataca até 3 tiles na direção que a entidade tá olhando
+void entidade_atacar(Entidade* atacante, ListaEntidades* alvos, Sala* sala, int alcance, int* score); //ativa o ataque
 
 #endif

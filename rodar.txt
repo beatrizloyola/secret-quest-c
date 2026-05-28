@@ -3,5 +3,6 @@
 make
 
 // Windows
-ctrl+shift+b
+C:\raylib\w64devkit\bin\gcc.exe main.c entidade/entidade.c mapa/mapa.c sistema/sistema.c -o game.exe -IC:\raylib\raylib\src -LC:\raylib\raylib\src -lraylib -lopengl32 -lgdi32 -lwinmm 
+(ctrl+shift+b só funciona se o tasks.json e o c_cpp_properties.json estiver configurado)
 .\game.exe

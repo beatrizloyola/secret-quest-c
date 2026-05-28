@@ -116,107 +116,131 @@ static Direcao inverter_direcao(Direcao direcao) { //inverte a direção quando 
     return DIR_DIREITA;
 }
 
-static bool tile_dentro_ataque(Entidade* atacante, Sala* sala, int tile_x, int tile_y) { //verifica se um tile está dentro do alcance atual da espada
-    if (atacante == NULL || sala == NULL || atacante->timer_debug_ataque <= 0.0f) { //nao pegarao o meu codigo
-        return false;
+static void ataque_retangulo(Entidade* atacante, float* esquerda, float* direita, float* cima, float* baixo) { //calcula a hitbox da "espada", usando posição float
+    float alcance = 1.0f;
+    float metade_tile_jogador = 0.5f; //inclui o tile onde o jogador está, não só o tile da frente
+    float alcance_lateral = 0.75f; //pega mais que meia tile nos lados pra não falhar quando o inimigo encosta no canto
+
+    if (atacante != NULL && atacante->debug_ataque_alcance > 0) { //por enquanto o main passa 1, mas da pra trocar se precisar
+        alcance = (float)atacante->debug_ataque_alcance;
+    }
+
+    if (atacante == NULL || esquerda == NULL || direita == NULL || cima == NULL || baixo == NULL) { //VVVVVVRRRRRRRUUUUUUUUUUUUUUUUUUUMMMMMMMMMMMMMMM🏎️🏎️🏎️🏎️🏎️
+        return;
+    }
+
+    if (atacante->direcao == DIR_DIREITA) { //tile do jogador + 1 tile completo na frente + 0.75 tile pra cima/baixo
+        *esquerda = atacante->x - metade_tile_jogador;
+        *direita = atacante->x + metade_tile_jogador + alcance;
+        *cima = atacante->y - alcance_lateral;
+        *baixo = atacante->y + alcance_lateral;
+    }
+    else if (atacante->direcao == DIR_ESQUERDA) { //mesma coisa, só que pra esquerda
+        *esquerda = atacante->x - metade_tile_jogador - alcance;
+        *direita = atacante->x + metade_tile_jogador;
+        *cima = atacante->y - alcance_lateral;
+        *baixo = atacante->y + alcance_lateral;
+    }
+    else if (atacante->direcao == DIR_BAIXO) { //tile do jogador + 1 tile pra baixo + 0.75 tile pros lados
+        *esquerda = atacante->x - alcance_lateral;
+        *direita = atacante->x + alcance_lateral;
+        *cima = atacante->y - metade_tile_jogador;
+        *baixo = atacante->y + metade_tile_jogador + alcance;
+    }
+    else { //DIR_CIMA ne cabecao
+        *esquerda = atacante->x - alcance_lateral;
+        *direita = atacante->x + alcance_lateral;
+        *cima = atacante->y - metade_tile_jogador - alcance;
+        *baixo = atacante->y + metade_tile_jogador;
+    }
+}
+
+static bool retangulos_encostando(float esq_a, float dir_a, float cima_a, float baixo_a, float esq_b, float dir_b, float cima_b, float baixo_b) {
+    if (esq_a > dir_a) {
+        float temp = esq_a;
+        esq_a = dir_a;
+        dir_a = temp;
+    }
+
+    if (cima_a > baixo_a) {
+        float temp = cima_a;
+        cima_a = baixo_a;
+        baixo_a = temp;
+    }
+
+    if (esq_b > dir_b) {
+        float temp = esq_b;
+        esq_b = dir_b;
+        dir_b = temp;
+    }
+
+    if (cima_b > baixo_b) {
+        float temp = cima_b;
+        cima_b = baixo_b;
+        baixo_b = temp;
+    }
+
+    return esq_a <= dir_b && dir_a >= esq_b && cima_a <= baixo_b && baixo_a >= cima_b;
+}
+
+static bool ataque_bloqueado_por_parede(Entidade* atacante, Sala* sala) { //impede a espada de funcionar se o tile diretamente na frente for parede
+    if (atacante == NULL || sala == NULL) { //sei nem pra que colocar um desse aq mas vai q quebra tudo por nao ter
+        return true;
     }
 
     int dx, dy;
-    direcao_para_delta(atacante->debug_ataque_direcao, &dx, &dy);
+    direcao_para_delta(atacante->direcao, &dx, &dy);
 
-    for (int i = 1; i <= atacante->debug_ataque_alcance; i++) { //alcance da espada em distância a partir do jogador
-        int frente_x = atacante->pos.x + dx * i;
-        int frente_y = atacante->pos.y + dy * i;
+    int frente_x = (int)(atacante->x + dx * 0.75f); //pega o tile na frente do centro do jogador usando a direção atual
+    int frente_y = (int)(atacante->y + dy * 0.75f);
 
-        int tiles_x[3];
-        int tiles_y[3];
-
-        tiles_x[0] = frente_x; //tile diretamente na frente
-        tiles_y[0] = frente_y;
-
-        if (dx != 0) { //se ataca pra esquerda/direita, as diagonais ficam acima e abaixo da frente
-            tiles_x[1] = frente_x;
-            tiles_y[1] = frente_y - 1;
-            tiles_x[2] = frente_x;
-            tiles_y[2] = frente_y + 1;
-        }
-        else { //se ataca pra cima/baixo, as diagonais ficam à esquerda e à direita da frente
-            tiles_x[1] = frente_x - 1;
-            tiles_y[1] = frente_y;
-            tiles_x[2] = frente_x + 1;
-            tiles_y[2] = frente_y;
-        }
-
-        for (int j = 0; j < 3; j++) { //testa frente + duas diagonais
-            if (tiles_x[j] == tile_x && tiles_y[j] == tile_y) {
-                if (tile_x < 0 || tile_y < 0 || tile_x >= sala->largura || tile_y >= sala->altura) { //fora do mapa não conta como acerto
-                    return false;
-                }
-
-                if (sala_colisao(sala, tile_x, tile_y)) { //parede bloqueia aquele pedaço da espada
-                    return false;
-                }
-
-                return true;
-            }
-        }
+    if (frente_x < 0 || frente_y < 0 || frente_x >= sala->largura || frente_y >= sala->altura) { //fora do mapa bloqueia
+        return true;
     }
 
-    return false;
+    return sala_colisao(sala, frente_x, frente_y); //parede bloqueia o golpe
 }
 
-static void desenhar_debug_ataque(Entidade* atacante, Sala* sala, int cam_x, int cam_y, int tamanho_tile) { //desenha em verde os tiles que a espada está cobrindo, só pra debug
+static bool entidade_dentro_ataque(Entidade* atacante, Sala* sala, Entidade* alvo) { //verifica se a hitbox float da espada encosta na hitbox float do inimigo
+    if (atacante == NULL || sala == NULL || alvo == NULL || atacante->timer_debug_ataque <= 0.0f) { //aoooo potencia
+        return false;
+    }
+
+    if (ataque_bloqueado_por_parede(atacante, sala)) { //não deixa acertar através da parede logo na frente
+        return false;
+    }
+
+    float ataque_esq, ataque_dir, ataque_cima, ataque_baixo;
+    ataque_retangulo(atacante, &ataque_esq, &ataque_dir, &ataque_cima, &ataque_baixo);
+
+    float raio_alvo = entidade_raio(alvo);
+    float alvo_esq = alvo->x - raio_alvo;
+    float alvo_dir = alvo->x + raio_alvo;
+    float alvo_cima = alvo->y - raio_alvo;
+    float alvo_baixo = alvo->y + raio_alvo;
+
+    return retangulos_encostando(ataque_esq, ataque_dir, ataque_cima, ataque_baixo, alvo_esq, alvo_dir, alvo_cima, alvo_baixo);
+}
+
+static void desenhar_debug_ataque(Entidade* atacante, Sala* sala, int cam_x, int cam_y, int tamanho_tile) { //desenha em verde o retângulo real da espada, preso ao jogador, só pra debug
     if (atacante == NULL || sala == NULL || atacante->timer_debug_ataque <= 0.0f) { //pegaram o meu codigo :c
         return;
     }
 
-    int dx, dy;
-    direcao_para_delta(atacante->debug_ataque_direcao, &dx, &dy);
-
-    for (int i = 1; i <= atacante->debug_ataque_alcance; i++) { //normalmente i só vale 1: frente + diagonal superior + diagonal inferior
-        int frente_x = atacante->pos.x + dx * i;
-        int frente_y = atacante->pos.y + dy * i;
-
-        int tiles_x[3];
-        int tiles_y[3];
-
-        tiles_x[0] = frente_x; //tile diretamente na frente do jogador
-        tiles_y[0] = frente_y;
-
-        if (dx != 0) { //ataque horizontal: pinta frente, diagonal de cima e diagonal de baixo
-            tiles_x[1] = frente_x;
-            tiles_y[1] = frente_y - 1;
-            tiles_x[2] = frente_x;
-            tiles_y[2] = frente_y + 1;
-        }
-        else { //ataque vertical: pinta frente, diagonal da esquerda e diagonal da direita
-            tiles_x[1] = frente_x - 1;
-            tiles_y[1] = frente_y;
-            tiles_x[2] = frente_x + 1;
-            tiles_y[2] = frente_y;
-        }
-
-        for (int j = 0; j < 3; j++) { //desenha os 3 tiles da hitbox da espada
-            int tile_x = tiles_x[j];
-            int tile_y = tiles_y[j];
-
-            if (tile_x < 0 || tile_y < 0 || tile_x >= sala->largura || tile_y >= sala->altura) { //se sair do mapa, ignora só esse pedaço
-                continue;
-            }
-
-            if (sala_colisao(sala, tile_x, tile_y)) { //debug não pinta parede
-                continue;
-            }
-
-            DrawRectangle(
-                (tile_x - cam_x) * tamanho_tile,
-                (tile_y - cam_y) * tamanho_tile,
-                tamanho_tile,
-                tamanho_tile,
-                GREEN
-            );
-        }
+    if (ataque_bloqueado_por_parede(atacante, sala)) { //se tem parede na frente, não pinta a espada atravessando parede
+        return;
     }
+
+    float ataque_esq, ataque_dir, ataque_cima, ataque_baixo;
+    ataque_retangulo(atacante, &ataque_esq, &ataque_dir, &ataque_cima, &ataque_baixo);
+
+    DrawRectangle(
+        (int)((ataque_esq - cam_x) * tamanho_tile),
+        (int)((ataque_cima - cam_y) * tamanho_tile),
+        (int)((ataque_dir - ataque_esq) * tamanho_tile),
+        (int)((ataque_baixo - ataque_cima) * tamanho_tile),
+        GREEN
+    );
 }
 
 static void inimigo_mudar_direcao(Entidade* inimigo, Sala* sala) { //faz o inimigo tentar mudar de direção sozinho, igual no jogo original
@@ -277,10 +301,10 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
     entidade->timer_movimento = 0.0f; //timer usado pelo inimigo pra patrulhar sem andar rápido demais
     entidade->timer_mudar_direcao = 0.0f; //timer usado pra inimigo mudar de direção sem precisar bater na parede
     entidade->timer_debug_ataque = 0.0f; //timer usado pra manter a espada ativa e pintar a hitbox na tela
-    entidade->debug_ataque_x = x; //mantido por compatibilidade, mas o ataque agora segue a posição atual do jogador
+    entidade->debug_ataque_x = x; //o ataque segue a posição atual do jogador
     entidade->debug_ataque_y = y; //ler comentário acima
     entidade->debug_ataque_alcance = 0; //sem ataque ativo no spawn
-    entidade->debug_ataque_direcao = DIR_BAIXO; //direção padrão do debug
+    entidade->debug_ataque_direcao = DIR_BAIXO; //o ataque usa a direção atual da entidade
     entidade->ataque_ja_acertou = false; //evita dar dano várias vezes no mesmo golpe de espada
 
     entidade->next = NULL;
@@ -288,15 +312,15 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
     if (tipo == ENT_JOGADOR) {      //se o tipo for jogador:
         entidade->max_hp = 10;
         entidade->hp = 10;
-        entidade->ataque = 2;
-        entidade->velocidade = 6.7f;
+        entidade->ataque = 3;
+        entidade->velocidade = 4.0f;
     }
     else if (tipo == ENT_INIMIGO) { //se nao, se o tipo for inimigo:
         entidade->max_hp = 3;
         entidade->hp = 3;
         entidade->ataque = 1;
         entidade->direcao = DIR_DIREITA;
-        entidade->velocidade = 6.7f;
+        entidade->velocidade = 4.0f;
         entidade->timer_mudar_direcao = GetRandomValue(45, 110) / 100.0f;
     }
     else {                          //se nao, o tipo é item:
@@ -443,7 +467,7 @@ static void aplicar_dano_ataque(Entidade* atacante, ListaEntidades* alvos, Sala*
     while (atual != NULL) {
         Entidade* proximo = atual->next; //guarda o próximo porque o inimigo pode morrer e sair da lista
 
-        if (atual->tipo == ENT_INIMIGO && atual->vivo && tile_dentro_ataque(atacante, sala, atual->pos.x, atual->pos.y)) {
+        if (atual->tipo == ENT_INIMIGO && atual->vivo && entidade_dentro_ataque(atacante, sala, atual)) {
             atual->hp -= atacante->ataque;
             atacante->ataque_ja_acertou = true;
 
@@ -477,8 +501,8 @@ void entidade_atacar(Entidade* atacante, ListaEntidades* alvos, Sala* sala, int 
     atacante->timer_debug_ataque = 0.50f; //tempo em que a hitbox da espada fica ativa e pintada de verde
     atacante->debug_ataque_x = atacante->pos.x; //mantido só por compatibilidade, o debug agora segue a posição atual do jogador
     atacante->debug_ataque_y = atacante->pos.y; //ler comentário acima
-    atacante->debug_ataque_alcance = alcance; //distância da espada: com alcance 1, pinta frente + duas diagonais
-    atacante->debug_ataque_direcao = atacante->direcao; //guarda a direção do golpe no momento do espaço
+    atacante->debug_ataque_alcance = alcance; //distância da espada: com alcance 1, pega o tile do jogador + 1 tile na frente
+    atacante->debug_ataque_direcao = atacante->direcao; //hitbox acompanha a direção atual durante o golpe
     atacante->ataque_ja_acertou = false; //cada golpe pode acertar um inimigo uma vez
 
     aplicar_dano_ataque(atacante, alvos, sala, score); //tenta acertar imediatamente ao apertar espaço
@@ -515,7 +539,7 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
         }
 
         if (atual->tipo == ENT_INIMIGO && atual->vivo) {
-            if (jogador->timer_debug_ataque > 0.0f && !jogador->ataque_ja_acertou && tile_dentro_ataque(jogador, sala, atual->pos.x, atual->pos.y)) { //se o inimigo entrar na espada durante o golpe, toma dano
+            if (jogador->timer_debug_ataque > 0.0f && !jogador->ataque_ja_acertou && entidade_dentro_ataque(jogador, sala, atual)) { //se o inimigo entrar na espada durante o golpe, toma dano
                 atual->hp -= jogador->ataque;
                 jogador->ataque_ja_acertou = true;
 
