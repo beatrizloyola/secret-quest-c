@@ -45,7 +45,7 @@ int main(void) {
 
                 if (!sala) break;
 
-                if (IsKeyPressed(KEY_ESCAPE)) {
+                if (IsKeyPressed(KEY_TAB)) {
                     sistema_transicao(&estado, ESTADO_PAUSE);
                     break;
                 }

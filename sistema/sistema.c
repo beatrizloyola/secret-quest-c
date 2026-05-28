@@ -43,7 +43,7 @@ void menu_desenhar(void) {
 
 // Menu Pause
 void tela_pause_atualizar(EstadoJogo* estado) {
-    if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_ENTER)) {
+    if (IsKeyPressed(KEY_TAB) || IsKeyPressed(KEY_ENTER)) {
         sistema_transicao(estado, ESTADO_JOGANDO);
     }
 }
@@ -60,7 +60,7 @@ void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio)
     DrawText(buffer, 80, 200, 20, WHITE);
     snprintf(buffer, sizeof(buffer), "Pontuacao: %d", score);
     DrawText(buffer, 80, 240, 20, WHITE);
-    DrawText("Pressione ESC ou ENTER para voltar", 80, 360, 15, GRAY);
+    DrawText("Pressione TAB ou ENTER para voltar", 80, 360, 15, GRAY);
 }
 
 // Menu Ranking
