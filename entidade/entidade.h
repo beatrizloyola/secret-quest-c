@@ -18,7 +18,7 @@ void entidade_mover_jogador(Entidade* jogador, Sala* sala, float dt); //moviment
 
 void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float dt, int* score, EstadoJogo* estado); //atualiza inimigos, cooldowns, dano por contato e coleta de item
 
-void lista_desenhar(ListaEntidades* lista, int cam_x, int cam_y, int tamanho_tile); //desenha todas as entidades da lista
+void lista_desenhar(ListaEntidades* lista, Sala* sala, int cam_x, int cam_y, int tamanho_tile); //desenha todas as entidades da lista e a hitbox de ataque quando estiver ativa
 
 Entidade* entidade_criar(EntTipo tipo, int x, int y); //cria uma entidade
 

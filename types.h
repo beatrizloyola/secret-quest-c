@@ -65,6 +65,12 @@ typedef struct Entidade {
     float timer_ataque; //timer_ataque;
     float timer_movimento; //timer pra controlar a patrulha do inimigo
     float timer_mudar_direcao; //timer pra IA mudar de direção voluntariamente enquanto anda
+    float timer_debug_ataque; //timer pra desenhar a hitbox do ataque durante alguns frames
+    int debug_ataque_x; //tile x onde o ataque começou, usado só pro debug visual
+    int debug_ataque_y; //tile y onde o ataque começou, usado só pro debug visual
+    int debug_ataque_alcance; //quantos tiles o debug do ataque deve desenhar
+    Direcao debug_ataque_direcao; //direção do ataque no momento em que o jogador apertou espaço
+    bool ataque_ja_acertou; //evita que o mesmo golpe dê dano várias vezes
     struct Entidade* next; //próxima entidade da lista
 } Entidade;
 
