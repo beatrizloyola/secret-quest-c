@@ -243,6 +243,39 @@ static void desenhar_debug_ataque(Entidade* atacante, Sala* sala, int cam_x, int
     );
 }
 
+#define INIMIGO_ALCANCE_VISAO 6 //distância em tiles pra inimigo começar a perseguir o jogador
+
+static void inimigo_perseguir_jogador(Entidade* inimigo, Entidade* jogador, Sala* sala) { //move o inimigo em direção ao jogador; tenta o eixo com maior distância primeiro
+    int dx = jogador->pos.x - inimigo->pos.x;
+    int dy = jogador->pos.y - inimigo->pos.y;
+
+    Direcao opcoes[2];
+    int n = 0;
+
+    if ((dx < 0 ? -dx : dx) >= (dy < 0 ? -dy : dy)) { //prefere o eixo com maior delta
+        if (dx > 0) opcoes[n++] = DIR_DIREITA;
+        else if (dx < 0) opcoes[n++] = DIR_ESQUERDA;
+        if (dy > 0) opcoes[n++] = DIR_BAIXO;
+        else if (dy < 0) opcoes[n++] = DIR_CIMA;
+    } else {
+        if (dy > 0) opcoes[n++] = DIR_BAIXO;
+        else if (dy < 0) opcoes[n++] = DIR_CIMA;
+        if (dx > 0) opcoes[n++] = DIR_DIREITA;
+        else if (dx < 0) opcoes[n++] = DIR_ESQUERDA;
+    }
+
+    for (int i = 0; i < n; i++) { //tenta cada opção, usa a primeira que não bate em parede
+        int ddx, ddy;
+        direcao_para_delta(opcoes[i], &ddx, &ddy);
+        float teste_x = inimigo->x + ddx * 0.25f;
+        float teste_y = inimigo->y + ddy * 0.25f;
+        if (!entidade_colide_mapa(inimigo, sala, teste_x, teste_y, true)) {
+            inimigo->direcao = opcoes[i];
+            return;
+        }
+    }
+}
+
 static void inimigo_mudar_direcao(Entidade* inimigo, Sala* sala) { //faz o inimigo tentar mudar de direção sozinho, igual no jogo original
     if (inimigo == NULL || sala == NULL) { //sem inimigo ou sala não tem como decidir caminho
         return;
@@ -320,7 +353,7 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
         entidade->hp = 3;
         entidade->ataque = 1;
         entidade->direcao = DIR_DIREITA;
-        entidade->velocidade = 4.0f;
+        entidade->velocidade = 2.5f;
         entidade->timer_mudar_direcao = GetRandomValue(45, 110) / 100.0f;
     }
     else {                          //se nao, o tipo é item:
@@ -587,7 +620,9 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
                 }
             }
 
-            if (atual->timer_mudar_direcao <= 0.0f) { //além de inverter na parede, o inimigo também muda de direção por vontade própria
+            if (distancia_manhattan(atual, jogador) <= INIMIGO_ALCANCE_VISAO) { //dentro do alcance: persegue o jogador
+                inimigo_perseguir_jogador(atual, jogador, sala);
+            } else if (atual->timer_mudar_direcao <= 0.0f) { //fora do alcance: patrulha aleatória
                 inimigo_mudar_direcao(atual, sala);
             }
 
