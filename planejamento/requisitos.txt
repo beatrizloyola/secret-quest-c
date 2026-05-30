@@ -8,4 +8,6 @@
 
 [X] Matrizes
 
-[ ] Escrita e leitura em arquivo (top scores, por ex.)
+[X] Leitura em arquivo
+
+[ ] Escrita em arquivo
