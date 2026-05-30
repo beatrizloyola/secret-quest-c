@@ -56,7 +56,7 @@ void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio)
     DrawText(buffer, 80, 120, 20, WHITE);
     snprintf(buffer, sizeof(buffer), "Energia: %d / %d", hp, 10);
     DrawText(buffer, 80, 160, 20, WHITE);
-    snprintf(buffer, sizeof(buffer), "Oxigenio: %d / %d", oxigenio, 100);
+    snprintf(buffer, sizeof(buffer), "Oxigenio: %d / %d", oxigenio, 15);
     DrawText(buffer, 80, 200, 20, WHITE);
     snprintf(buffer, sizeof(buffer), "Pontuacao: %d", score);
     DrawText(buffer, 80, 240, 20, WHITE);
@@ -96,9 +96,49 @@ void hud_desenhar(int score, int hp) {
     snprintf(texto, sizeof(texto), "SCORE: %d", score);
     DrawText(texto, 20, y_hud + 20, 30, WHITE);
 
-    // Hp
-    snprintf(texto, sizeof(texto), "HP: %d / %d", hp, 10);
-    DrawText(texto, 280, y_hud + 20, 30, WHITE);
+    // Cilindro oxigênio
+
+    int cx = 360;
+    int cy = y_hud + 20;
+    int cw = 140;
+    int ch = 26;
+
+    // Bico na esquerda
+    int bico_w = 10;
+    int bico_h = 16;
+    int bico_x = cx - bico_w;
+    int bico_y = cy + (ch / 2) - (bico_h / 2);
+    DrawRectangle(bico_x, bico_y, bico_w, bico_h, GRAY);
+
+    // Borda
+    DrawRectangleLines(cx, cy, cw, ch, WHITE);
+
+    // Preenchimento barra
+    float proporcao = (float)hp / 15.0f;
+    if (proporcao < 0.0f) proporcao = 0.0f;
+    if (proporcao > 1.0f) proporcao = 1.0f;
+
+    int margem = 2;
+    int preenchimento_w = (int)((cw - 2 * margem) * proporcao);
+    int preenchimento_x = cx + margem;
+    int preenchimento_y = cy + margem;
+    int preenchimento_h = ch - 2 * margem;
+
+    // Mudança de cor de oxigênio
+    Color cor;
+    if (hp >= 11)       cor = (Color){ 0, 200, 255, 255 };
+    else if (hp >= 6)  cor = (Color){ 0, 150, 200, 255 };
+    else                     cor = (Color){ 0, 80, 120, 255 };
+
+    // preenchimento barra de oxigenio
+    if (preenchimento_w > 0) {
+        DrawRectangle(preenchimento_x, preenchimento_y, preenchimento_w, preenchimento_h, cor);
+    }
+
+    // texto "oxigênio" centralizado
+    int largura_oxg = MeasureText("Oxigênio", 16);
+    int o2_x = cx + (cw / 2) - (largura_oxg / 2);
+    DrawText("Oxigênio", o2_x, y_hud + 54, 16, GRAY);
 
     // Pilha | Barra de Energia
     
@@ -119,25 +159,25 @@ void hud_desenhar(int score, int hp) {
     DrawRectangleLines(px, py, pw, ph, WHITE);
     
     // Preenchimento pilha
-    float proporcao = (float)energia / 10.0f;
-    if (proporcao < 0.0f) proporcao = 0.0f;
-    if (proporcao > 1.0f) proporcao = 1.0f;
+    float proporcaoPilha = (float)energia / 15.0f;
+    if (proporcaoPilha < 0.0f) proporcaoPilha = 0.0f;
+    if (proporcaoPilha > 1.0f) proporcaoPilha = 1.0f;
     
-    int margem = 3;
-    int preenchimento_w = (int)((pw - 2 * margem) * proporcao);
-    int preenchimento_x = px + margem;
-    int preenchimento_y = py + margem;
-    int preenchimento_h = ph - 2 * margem;
+    int margemPilha = 3;
+    int preenchimentoPilha_w = (int)((pw - 2 * margemPilha) * proporcaoPilha);
+    int preenchimentoPilha_x = px + margemPilha;
+    int preenchimentoPilha_y = py + margemPilha;
+    int preenchimentoPilha_h = ph - 2 * margemPilha;
     
     // mudança de cor de energia
-    Color cor;
-    if (energia >= 7)       cor = GREEN;
-    else if (energia >= 4)  cor = YELLOW;
-    else                    cor = RED;
+    Color corPilha;
+    if (energia >= 11)       corPilha = GREEN;
+    else if (energia >= 6)  corPilha = YELLOW;
+    else                    corPilha = RED;
     
     // preenchimento da barra
-    if (preenchimento_w > 0) {
-        DrawRectangle(preenchimento_x, preenchimento_y, preenchimento_w, preenchimento_h, cor);
+    if (preenchimentoPilha_w > 0) {
+        DrawRectangle(preenchimentoPilha_x, preenchimentoPilha_y, preenchimentoPilha_w, preenchimentoPilha_h, corPilha);
     }
     
     // texto "energia" centralizado

@@ -21,7 +21,7 @@ void tela_ranking_desenhar(void);
 void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado);
 
 // HUD
-void hud_desenhar(int score, int hp);
+void hud_desenhar(int score, int oxigenio);
 
 // Sistema Ranking
 void ranking_carregar(Recorde* lista, int max);

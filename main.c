@@ -186,7 +186,6 @@ int main(void) {
     ListaEntidades* entidades = NULL;
     Entidade* jogador = NULL;
     int score = 0;
-    int player_oxigenio = 100; // placeholder
     bool bloquear_enter_menu = false; //evita que o ENTER do game over já aperte "iniciar jogo" no menu
 
 
@@ -226,6 +225,22 @@ int main(void) {
                 }
 
                 float dt = GetFrameTime();
+
+                // diminuição oxigenio tempo
+                static float timer_oxigenio = 0.0f;
+                timer_oxigenio += dt;
+                if (timer_oxigenio >= 10.0f) {
+                    if (jogador->hp > 0) {
+                        jogador->hp -= 1;
+                    }
+                    timer_oxigenio = 0.0f;
+    
+                    if (jogador->hp <= 0) {
+                        jogador->hp = 0;
+                        jogador->vivo = false;
+                        sistema_transicao(&estado, ESTADO_GAME_OVER);
+                    }
+                }
 
                 entidade_mover_jogador(jogador, sala, dt); //movimentação
 
@@ -288,9 +303,9 @@ int main(void) {
                 BeginDrawing();
                 tela_pause_desenhar(
                     sala ? sala->arquivo : NULL,
-                    jogador ? jogador->hp : 0,
+                    jogador ? jogador->hp : 0, // placeholder energia
                     score,
-                    player_oxigenio
+                    jogador ? jogador->hp : 0  // oxigênio real
                 );
                 EndDrawing();
                 break;
