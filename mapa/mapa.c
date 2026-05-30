@@ -12,6 +12,7 @@ Sala* sala_carregar(const char* arquivo) {
     s->arquivo[63] = '\0'; // Fim do string
     s->num_inimigos = 0; // Qtd inicial
     s->num_itens = 0;
+    memset(s->inimigos_mortos, 0, sizeof(s->inimigos_mortos));
 
     fscanf(f, "%d %d", &s->largura, &s->altura);
 

@@ -400,14 +400,17 @@ void lista_spawnar_sala(ListaEntidades* lista, Sala* sala, Entidade** jogador) {
     }
 
     Entidade* novo_jogador = entidade_criar(ENT_JOGADOR, sala->spawn_jogador.x, sala->spawn_jogador.y);
+    novo_jogador->spawn_idx = -1;
     lista_adicionar(lista, novo_jogador);
 
     if (jogador != NULL) { //guarda um ponteiro direto pro jogador pra não precisar procurar na lista toda hora
         *jogador = novo_jogador;
     }
 
-    for (int i = 0; i < sala->num_inimigos; i++) { //cada E no .txt vira um inimigo
+    for (int i = 0; i < sala->num_inimigos; i++) { //cada E no .txt vira um inimigo; pula se já foi morto
+        if (sala->inimigos_mortos[i]) continue;
         Entidade* inimigo = entidade_criar(ENT_INIMIGO, sala->spawn_inimigos[i].x, sala->spawn_inimigos[i].y);
+        inimigo->spawn_idx = i;
         lista_adicionar(lista, inimigo);
     }
 
@@ -473,6 +476,10 @@ static void aplicar_dano_ataque(Entidade* atacante, ListaEntidades* alvos, Sala*
 
             if (atual->hp <= 0) { //se o hp zerar, inimigo morre e sai da lista
                 atual->vivo = false;
+
+                if (atual->spawn_idx >= 0) {
+                    sala->inimigos_mortos[atual->spawn_idx] = true;
+                }
 
                 if (score != NULL) {
                     *score += 100;
@@ -545,6 +552,10 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
 
                 if (atual->hp <= 0) { //se o hp zerar, inimigo morre e sai da lista
                     atual->vivo = false;
+
+                    if (atual->spawn_idx >= 0) {
+                        sala->inimigos_mortos[atual->spawn_idx] = true;
+                    }
 
                     if (score != NULL) {
                         *score += 100;

@@ -4,10 +4,34 @@
 #include "mapa/mapa.h"
 #include "entidade/entidade.h"
 #include "sistema/sistema.h"
+#include <string.h>
 
 #define TAMANHO_TILE  80
 #define CAMERA_LARGURA 12
 #define CAMERA_ALTURA  10
+#define SALA_CACHE_MAX 32
+
+static Sala* sala_cache[SALA_CACHE_MAX]; //salas ficam em memória durante toda a partida pra preservar inimigos_mortos
+static int   sala_cache_n = 0;
+
+static Sala* sala_obter(const char* arquivo) { //retorna sala do cache se já foi carregada, senão carrega do disco e guarda
+    for (int i = 0; i < sala_cache_n; i++) {
+        if (strncmp(sala_cache[i]->arquivo, arquivo, 63) == 0) {
+            return sala_cache[i];
+        }
+    }
+    if (sala_cache_n >= SALA_CACHE_MAX) return NULL;
+    Sala* s = sala_carregar(arquivo);
+    if (s) sala_cache[sala_cache_n++] = s;
+    return s;
+}
+
+static void sala_cache_limpar(void) { //libera todas as salas do cache; chamado no game over e ao fechar janela
+    for (int i = 0; i < sala_cache_n; i++) {
+        sala_descarregar(sala_cache[i]);
+    }
+    sala_cache_n = 0;
+}
 
 /*
 Mudanças levemente drásticas no main.c pra permitir que o jogador e os inimigos se movam de maneira fluida, 
@@ -186,7 +210,7 @@ int main(void) {
 
             case ESTADO_JOGANDO: {
                 if (sala == NULL) {
-                    sala = sala_carregar("mapa/salas/sala1.txt");
+                    sala = sala_obter("mapa/salas/sala1.txt");
                     if (sala) {
                         entidades = lista_criar();
                         lista_spawnar_sala(entidades, sala, &jogador);
@@ -220,14 +244,13 @@ int main(void) {
                     Direcao dir    = sala_direcao_porta(sala, jogador->pos.x, jogador->pos.y);
                     const char* proxima = sala_saida_em(sala, jogador->pos.x, jogador->pos.y);
                     if (proxima) {
-                        Sala* nova = sala_carregar(proxima);
+                        Sala* nova = sala_obter(proxima);
                         if (nova) {
                             int hp_anterior = jogador->hp; //guarda a vida antes de destruir a lista da sala antiga
 
                             if (entidades) { //limpa as entidades da sala q vai ser descarregada pra n quebrar a rebimboca da parafuseta, mesmo comentario se aplica pra todas as vezes q isso aparecer
-                                lista_limpar(entidades); 
+                                lista_limpar(entidades);
                             }
-                            sala_descarregar(sala);
                             sala = nova;
 
                             entidades = lista_criar(); //cria novas entidades na sala nova
@@ -290,10 +313,8 @@ int main(void) {
                         entidades = NULL;
                     }
 
-                    if (sala) {
-                        sala_descarregar(sala);
-                        sala = NULL;
-                    }
+                    sala_cache_limpar();
+                    sala = NULL;
 
                     jogador = NULL;
                     bloquear_enter_menu = true;
@@ -311,9 +332,7 @@ int main(void) {
     if (entidades) {
         lista_limpar(entidades);
     }
-    if (sala) {
-        sala_descarregar(sala);
-    }
+    sala_cache_limpar();
     menu_finalizar();
     CloseWindow();
     return 0;

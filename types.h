@@ -28,6 +28,7 @@ typedef struct {
     int num_inimigos;
     Vec2i spawn_itens[16];
     int num_itens;
+    bool inimigos_mortos[16];
     char arquivo[64];
     char saida_norte[64];
     char saida_sul[64];
@@ -71,6 +72,7 @@ typedef struct Entidade {
     int debug_ataque_alcance; //quantos tiles o debug do ataque deve desenhar
     Direcao debug_ataque_direcao; //direção do ataque no momento em que o jogador apertou espaço
     bool ataque_ja_acertou; //evita que o mesmo golpe dê dano várias vezes
+    int spawn_idx; //índice em sala->spawn_inimigos, -1 se não for inimigo
     struct Entidade* next; //próxima entidade da lista
 } Entidade;
 
