@@ -10,6 +10,7 @@
 #define CAMERA_LARGURA 12
 #define CAMERA_ALTURA  10
 #define SALA_CACHE_MAX 32
+#define ALTURA_HUD 80
 
 static Sala* sala_cache[SALA_CACHE_MAX]; //salas ficam em memória durante toda a partida pra preservar inimigos_mortos
 static int   sala_cache_n = 0;
@@ -176,7 +177,7 @@ static void posicionar_jogador_apos_porta(Sala* sala, Entidade* jogador, Direcao
 
 
 int main(void) {
-    InitWindow(CAMERA_LARGURA * TAMANHO_TILE, CAMERA_ALTURA * TAMANHO_TILE, "Secret Quest");
+    InitWindow(CAMERA_LARGURA * TAMANHO_TILE, (CAMERA_ALTURA * TAMANHO_TILE) + ALTURA_HUD, "Secret Quest");
     SetTargetFPS(60);
 
     menu_inicializar();
@@ -277,6 +278,7 @@ int main(void) {
                     ClearBackground(DARKGRAY);
                     sala_desenhar(sala, cameraX, cameraY, TAMANHO_TILE, CAMERA_LARGURA, CAMERA_ALTURA);
                     lista_desenhar(entidades, sala, cameraX, cameraY, TAMANHO_TILE);
+                    hud_desenhar(score, jogador->hp);
                 EndDrawing();
                 break;
             }

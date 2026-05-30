@@ -83,9 +83,67 @@ void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado) {
 
 // HUD
 void hud_desenhar(int score, int hp) {
-    (void)score;
-    (void)hp;
-    // placeholder para dps
+    // Config
+    int altura_hud  = 80;
+    int largura     = GetScreenWidth();   // 960
+    int y_hud       = GetScreenHeight() - altura_hud;  // 880 - 80 = 800
+    int energia     = hp;                  // placeholder
+
+    DrawRectangle(0, y_hud, largura, altura_hud, BLACK);
+
+    // Score
+    char texto[128];
+    snprintf(texto, sizeof(texto), "SCORE: %d", score);
+    DrawText(texto, 20, y_hud + 20, 30, WHITE);
+
+    // Hp
+    snprintf(texto, sizeof(texto), "HP: %d / %d", hp, 10);
+    DrawText(texto, 280, y_hud + 20, 30, WHITE);
+
+    // Pilha | Barra de Energia
+    
+    // Pilha
+    int px = 800;           //posição horizontal pilha
+    int py = y_hud + 20;    // posição vertical pilha
+    int pw = 120;           // largura pilha
+    int ph = 24;            // altura pilha
+    
+    // Cabeça pilha
+    int cabeca_w = 6;
+    int cabeca_h = 12;
+    int cabeca_x = px + pw;
+    int cabeca_y = py + (ph / 2) - (cabeca_h / 2);
+    DrawRectangle(cabeca_x, cabeca_y, cabeca_w, cabeca_h, GRAY);
+    
+    // Borda da pilha
+    DrawRectangleLines(px, py, pw, ph, WHITE);
+    
+    // Preenchimento pilha
+    float proporcao = (float)energia / 10.0f;
+    if (proporcao < 0.0f) proporcao = 0.0f;
+    if (proporcao > 1.0f) proporcao = 1.0f;
+    
+    int margem = 3;
+    int preenchimento_w = (int)((pw - 2 * margem) * proporcao);
+    int preenchimento_x = px + margem;
+    int preenchimento_y = py + margem;
+    int preenchimento_h = ph - 2 * margem;
+    
+    // mudança de cor de energia
+    Color cor;
+    if (energia >= 7)       cor = GREEN;
+    else if (energia >= 4)  cor = YELLOW;
+    else                    cor = RED;
+    
+    // preenchimento da barra
+    if (preenchimento_w > 0) {
+        DrawRectangle(preenchimento_x, preenchimento_y, preenchimento_w, preenchimento_h, cor);
+    }
+    
+    // texto "energia" centralizado
+    int largura_texto = MeasureText("ENERGIA", 14);
+    int tag_x = px + (pw / 2) - (largura_texto / 2);
+    DrawText("ENERGIA", tag_x, y_hud + 54, 14, GRAY);
 }
 
 // Sistema Ranking (placeholder)
