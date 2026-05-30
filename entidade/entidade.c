@@ -428,22 +428,28 @@ void entidade_mover_jogador(Entidade* jogador, Sala* sala, float dt) { //movimen
     float dx = 0.0f;
     float dy = 0.0f;
 
-    //IsKeyDown continua verdadeiro enquanto a tecla estiver pressionada, por isso é melhor pra movimentação
+    //IsKeyDown continua verdadeiro enquanto a tecla estiver pressionada
+    //X e Y são lidados separadamente, assim dá pra andar na diagonal
     if (IsKeyDown(KEY_RIGHT)) {
         dx = 1.0f;
         jogador->direcao = DIR_DIREITA;
     }
-    else if (IsKeyDown(KEY_LEFT)) {
+    if (IsKeyDown(KEY_LEFT)) {
         dx = -1.0f;
         jogador->direcao = DIR_ESQUERDA;
     }
-    else if (IsKeyDown(KEY_DOWN)) {
+    if (IsKeyDown(KEY_DOWN)) {
         dy = 1.0f;
         jogador->direcao = DIR_BAIXO;
     }
-    else if (IsKeyDown(KEY_UP)) {
+    if (IsKeyDown(KEY_UP)) {
         dy = -1.0f;
         jogador->direcao = DIR_CIMA;
+    }
+
+    if (dx != 0.0f && dy != 0.0f) { //diagonal: normaliza pra não andar mais rápido
+        dx *= 0.7071f;
+        dy *= 0.7071f;
     }
 
     float novo_x = jogador->x + dx * jogador->velocidade * dt;
