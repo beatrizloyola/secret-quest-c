@@ -297,9 +297,9 @@ int main(void) {
                     break;
                 }
 
-                // Abre o terminal ao pisar nele e apertar ESPAÇO com todos os fragmentos coletados
+                // Abre o terminal ao pisar nele e apertar ENTER com todos os fragmentos coletados
                 if (!entrada_terminal && sala->grid[jogador->pos.y][jogador->pos.x].tipo == TILE_TERMINAL) {
-                    if (IsKeyPressed(KEY_SPACE) && fase.digitos_coletados == 0b1111) { //só abre se os 4 fragmentos foram coletados
+                    if (IsKeyPressed(KEY_ENTER) && fase.digitos_coletados == 0b1111) { //só abre se os 4 fragmentos foram coletados
                         entrada_terminal = true;
                         codigo_terminal[0] = '\0';
                         codigo_terminal_len = 0;
@@ -400,7 +400,7 @@ int main(void) {
                         DrawText("TERMINAL DE AUTODESTRUIÇÃO",  180, 220, 22, SKYBLUE);
                         DrawText("Digite o código:",            180, 270, 20, LIGHTGRAY);
                         DrawText(codigo_terminal,               180, 300, 32, YELLOW);
-                        DrawText("ENTER confirma  |  ESC cancela", 180, 360, 15, GRAY);
+                        DrawText("ENTER confirma codigo  |  ESC cancela", 180, 360, 15, GRAY);
                     }
                 EndDrawing();
                 break;
