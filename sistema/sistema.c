@@ -18,6 +18,7 @@ static Texture2D texPlayerDown;
 static Texture2D texPlayerLeft;
 static Texture2D texPlayerRight;
 static Texture2D texEnemy[5];
+static Texture2D texAtaque[5];
 
 void sistema_carregar_assets(void) {
     background = LoadTexture("assets/background.png");
@@ -27,12 +28,18 @@ void sistema_carregar_assets(void) {
     texPlayerDown  = LoadTexture("assets/player_down.png");
     texPlayerLeft  = LoadTexture("assets/player_left.png");
     texPlayerRight = LoadTexture("assets/player_right.png");
+
     // Dar load em cada textura para seu respectivo indice
     texEnemy[0] = LoadTexture("assets/enemy_0.png");
     texEnemy[1] = LoadTexture("assets/enemy_1.png");
     texEnemy[2] = LoadTexture("assets/enemy_2.png");
     texEnemy[3] = LoadTexture("assets/enemy_3.png");
     texEnemy[4] = LoadTexture("assets/enemy_4.png");
+    texAtaque[0] = LoadTexture("assets/ataque/SFX301_01.png");
+    texAtaque[1] = LoadTexture("assets/ataque/SFX301_02.png");
+    texAtaque[2] = LoadTexture("assets/ataque/SFX301_03.png");
+    texAtaque[3] = LoadTexture("assets/ataque/SFX301_04.png");
+    texAtaque[4] = LoadTexture("assets/ataque/SFX301_05.png");
 }
 
 void sistema_descarregar_assets(void) {
@@ -43,9 +50,13 @@ void sistema_descarregar_assets(void) {
     UnloadTexture(texPlayerDown);
     UnloadTexture(texPlayerLeft);
     UnloadTexture(texPlayerRight);
+    
     // Pode usar for para fazer unload
     for (int i = 0; i < 5; i++) {
         UnloadTexture(texEnemy[i]);
+    }
+    for (int i = 0; i < 5; i++) {
+        UnloadTexture(texAtaque[i]);
     }
 }
 
@@ -66,6 +77,14 @@ Texture2D sistema_get_enemy_texture(int sprite_idx) {
         return texEnemy[sprite_idx];
     }
     return texEnemy[0];
+}
+
+// Assets ataque
+Texture2D sistema_get_ataque_texture(int frame) {
+    if (frame >= 0 && frame < 5) {
+        return texAtaque[frame];
+    }
+    return texAtaque[0];
 }
 
 // Tela background
