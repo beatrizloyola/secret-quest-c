@@ -352,9 +352,9 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
         entidade->velocidade  = 4.0f;
     }
     else if (tipo == ENT_INIMIGO) { //se nao, se o tipo for inimigo:
-        entidade->max_hp = 3;
-        entidade->hp = 3;
-        entidade->ataque = 1;
+        entidade->max_hp = 5;
+        entidade->hp = 5;
+        entidade->ataque = 2;
         entidade->direcao = DIR_DIREITA;
         entidade->velocidade = 2.5f;
         entidade->timer_mudar_direcao = GetRandomValue(45, 110) / 100.0f;
@@ -542,7 +542,7 @@ static void aplicar_dano_ataque(Entidade* atacante, ListaEntidades* alvos, Sala*
                     *score += 100;
                 }
 
-                if (GetRandomValue(0, 9) < 6) { //60% de chance de dropar oxigênio ou energia
+                if (GetRandomValue(0, 9) < 4) { //40% de chance de dropar oxigênio ou energia
                     Entidade* drop = entidade_criar(ENT_ITEM, atual->pos.x, atual->pos.y);
                     drop->ataque    = GetRandomValue(1, 2); //1 = oxigênio, 2 = energia
                     drop->spawn_idx = -1;
@@ -625,7 +625,7 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
                         *score += 100;
                     }
 
-                    if (GetRandomValue(0, 9) < 6) { //60% de chance de dropar oxigênio ou energia
+                    if (GetRandomValue(0, 9) < 4) { //40% de chance de dropar oxigênio ou energia
                         Entidade* drop = entidade_criar(ENT_ITEM, atual->pos.x, atual->pos.y);
                         drop->ataque   = GetRandomValue(1, 2); //1 = oxigênio, 2 = energia
                         drop->spawn_idx = -1;
@@ -638,12 +638,12 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
                 }
             }
 
-            if ((entidades_encostando(atual, jogador) || distancia_manhattan(atual, jogador) <= 0) && atual->timer_ataque <= 0.0f) { //se encostar no jogador, dá dano com cooldown
-                jogador->hp -= atual->ataque;
+            if ((entidades_encostando(atual, jogador) || distancia_manhattan(atual, jogador) <= 0) && atual->timer_ataque <= 0.0f) { //se encostar no jogador, drena oxigênio (inimigos são aliens que sugam o ar)
+                jogador->oxigenio -= atual->ataque;
                 atual->timer_ataque = 1.0f;
 
-                if (jogador->hp <= 0) { //se o jogador morrer, vai pra tela de game over
-                    jogador->hp = 0;
+                if (jogador->oxigenio <= 0) { //sem oxigênio = game over
+                    jogador->oxigenio = 0;
                     jogador->vivo = false;
 
                     if (estado != NULL) {

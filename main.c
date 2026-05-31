@@ -276,7 +276,7 @@ int main(void) {
 
                 // oxigênio drena com o tempo; energia só é afetada por inimigos
                 timer_oxigenio += dt;
-                if (timer_oxigenio >= 10.0f) {
+                if (timer_oxigenio >= 7.0f) {
                     timer_oxigenio = 0.0f;
                     jogador->oxigenio--;
                     if (jogador->oxigenio <= 0) {
@@ -289,7 +289,14 @@ int main(void) {
                 if (!entrada_terminal) { //bloqueia movimento e ataque enquanto o jogador tá no terminal
                     entidade_mover_jogador(jogador, sala, dt);
 
-                    if (IsKeyPressed(KEY_SPACE)) { //porrada 💥💥
+                    if (IsKeyPressed(KEY_SPACE) && jogador->hp > 0) { //porrada 💥💥 — custa 1 de energia
+                        jogador->hp--;
+                        if (jogador->hp <= 0) { //ficou sem energia = não consegue mais atacar e morre
+                            jogador->hp = 0;
+                            jogador->vivo = false;
+                            sistema_transicao(&estado, ESTADO_GAME_OVER);
+                            break;
+                        }
                         entidade_atacar(jogador, entidades, sala, 1, &score);
                     }
                 }
