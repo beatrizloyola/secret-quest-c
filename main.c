@@ -1,10 +1,11 @@
-#include "raylib.h"
+#include <stdio.h>
+#include <string.h>
 #include <stddef.h>
+#include "raylib.h"
 #include "types.h"
 #include "mapa/mapa.h"
 #include "entidade/entidade.h"
 #include "sistema/sistema.h"
-#include <string.h>
 
 #define TAMANHO_TILE  80
 #define CAMERA_LARGURA 12
@@ -188,6 +189,17 @@ int main(void) {
     int player_oxigenio = 100; // placeholder
     bool bloquear_enter_menu = false; //evita que o ENTER do game over já aperte "iniciar jogo" no menu
 
+    Recorde ranking[5];
+    int ranking_count = 0;
+    char nome_input[16] = {0};
+    int nome_input_len = 0;
+
+    ranking_carregar(ranking, 5);
+    for (int i = 0; i < 5; i++) {
+        if (ranking[i].score > 0) ranking_count++;
+        else break;
+    }
+
 
     while (!WindowShouldClose()) {
 
@@ -214,6 +226,9 @@ int main(void) {
                     if (sala) {
                         entidades = lista_criar();
                         lista_spawnar_sala(entidades, sala, &jogador);
+                        score = 0;
+                        nome_input[0] = '\0';
+                        nome_input_len = 0;
                     }
                 }
 
@@ -296,31 +311,50 @@ int main(void) {
             case ESTADO_RANKING:
                 tela_ranking_atualizar(&estado);
                 BeginDrawing();
-                tela_ranking_desenhar();
+                tela_ranking_desenhar(ranking, ranking_count);
                 EndDrawing();
                 break;
 
-            case ESTADO_GAME_OVER:
-                BeginDrawing();
-                ClearBackground(BLACK);
-                DrawText("GAME OVER", 260, 250, 40, RED);
-                DrawText("Pressione ENTER para voltar ao menu", 250, 320, 20, WHITE);
-                EndDrawing();
+            case ESTADO_GAME_OVER: {
+                int c = GetCharPressed();
+                while (c > 0) {
+                    if (c >= 32 && c < 127 && nome_input_len < 15) {
+                        nome_input[nome_input_len++] = (char)c;
+                        nome_input[nome_input_len] = '\0';
+                    }
+                    c = GetCharPressed();
+                }
+                if (IsKeyPressed(KEY_BACKSPACE) && nome_input_len > 0) {
+                    nome_input[--nome_input_len] = '\0';
+                }
 
-                if (IsKeyPressed(KEY_ENTER)) {
+                if (IsKeyPressed(KEY_ENTER) && nome_input_len > 0) {
+                    ranking_adicionar(ranking, &ranking_count, nome_input, score);
+                    ranking_salvar(ranking, ranking_count);
+
                     if (entidades) {
                         lista_limpar(entidades);
                         entidades = NULL;
                     }
-
                     sala_cache_limpar();
                     sala = NULL;
-
                     jogador = NULL;
                     bloquear_enter_menu = true;
                     sistema_transicao(&estado, ESTADO_MENU);
                 }
+
+                char buf[64];
+                BeginDrawing();
+                ClearBackground(BLACK);
+                DrawText("GAME OVER", 260, 180, 40, RED);
+                snprintf(buf, sizeof(buf), "Pontuacao: %d", score);
+                DrawText(buf, 260, 240, 20, WHITE);
+                DrawText("Digite seu nome:", 260, 290, 20, GRAY);
+                DrawText(nome_input, 260, 320, 24, YELLOW);
+                DrawText("ENTER para confirmar", 260, 380, 15, GRAY);
+                EndDrawing();
                 break;
+            }
                 
             default:
                 BeginDrawing();

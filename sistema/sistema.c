@@ -69,11 +69,21 @@ void tela_ranking_atualizar(EstadoJogo* estado) {
         sistema_transicao(estado, ESTADO_MENU);
     }
 }
-void tela_ranking_desenhar(void) {
+void tela_ranking_desenhar(Recorde* lista, int count) {
     ClearBackground(BLACK);
     DrawText("RANKING", 100, 80, 40, YELLOW);
-    DrawText("--- Em breve ---", 100, 160, 20, GRAY);
-    DrawText("Pressione ENTER para voltar", 100, 360, 15, GRAY);
+
+    if (count == 0) {
+        DrawText("Nenhum recorde ainda.", 100, 160, 20, GRAY);
+    } else {
+        char buf[64];
+        for (int i = 0; i < count; i++) {
+            snprintf(buf, sizeof(buf), "%d. %-15s  %d", i + 1, lista[i].nome, lista[i].score);
+            DrawText(buf, 100, 160 + i * 36, 22, i == 0 ? GOLD : WHITE);
+        }
+    }
+
+    DrawText("Pressione ENTER para voltar", 100, 400, 15, GRAY);
 }
 
 // Mudança de Telas
@@ -88,21 +98,41 @@ void hud_desenhar(int score, int hp) {
     // placeholder para dps
 }
 
-// Sistema Ranking (placeholder)
+// Sistema Ranking
+#define RANKING_ARQUIVO "highscores.dat"
+
 void ranking_carregar(Recorde* lista, int max) {
-    (void)lista;
-    (void)max;
+    memset(lista, 0, sizeof(Recorde) * max);
+    FILE* f = fopen(RANKING_ARQUIVO, "rb");
+    if (!f) return;
+    fread(lista, sizeof(Recorde), max, f);
+    fclose(f);
 }
+
 void ranking_salvar(Recorde* lista, int count) {
-    (void)lista;
-    (void)count;
+    FILE* f = fopen(RANKING_ARQUIVO, "wb");
+    if (!f) return;
+    fwrite(lista, sizeof(Recorde), count, f);
+    fclose(f);
 }
+
 bool ranking_adicionar(Recorde* lista, int* count, const char* nome, int score) {
-    (void)lista;
-    (void)count;
-    (void)nome;
-    (void)score;
-    return false;
+    int n = *count;
+    if (n >= 5 && score <= lista[n - 1].score) return false;
+
+    if (n < 5) n++;
+    lista[n - 1].score = score;
+    strncpy(lista[n - 1].nome, nome, 15);
+    lista[n - 1].nome[15] = '\0';
+
+    for (int i = n - 1; i > 0 && lista[i].score > lista[i - 1].score; i--) {
+        Recorde tmp = lista[i];
+        lista[i]     = lista[i - 1];
+        lista[i - 1] = tmp;
+    }
+
+    *count = n;
+    return true;
 }
 
 

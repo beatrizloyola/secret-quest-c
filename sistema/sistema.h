@@ -15,7 +15,7 @@ void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio)
 
 // Tela de ranking
 void tela_ranking_atualizar(EstadoJogo* estado);
-void tela_ranking_desenhar(void);
+void tela_ranking_desenhar(Recorde* lista, int count);
 
 // Mudança de telas
 void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado);
