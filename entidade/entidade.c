@@ -3,6 +3,7 @@
 #include <raylib.h>
 #include "entidade.h"
 #include "../mapa/mapa.h"
+#include "../sistema/sistema.h"
 
 //As funções à seguir usam static pq elas só são usadas nesse arquivo aqui, não preciso chamar elas em lugar nenhum depois disso
 
@@ -748,13 +749,13 @@ void lista_desenhar(ListaEntidades* lista, Sala* sala, int cam_x, int cam_y, int
         float tela_x = (atual->x - cam_x) * tamanho_tile - tamanho_entidade / 2.0f;
         float tela_y = (atual->y - cam_y) * tamanho_tile - tamanho_entidade / 2.0f;
 
-        DrawRectangle(
-            (int)tela_x,
-            (int)tela_y,
-            (int)tamanho_entidade,
-            (int)tamanho_entidade,
-            cor
-        );
+        if (atual->tipo == ENT_JOGADOR) {
+            Texture2D tex = sistema_get_player_texture(atual->direcao);
+            float scale = tamanho_entidade / (float)tex.width; // 51.2 / 64 = 0.8
+            DrawTextureEx(tex, (Vector2){tela_x, tela_y}, 0.0f, scale, WHITE);
+        } else {
+            DrawRectangle((int)tela_x, (int)tela_y, (int)tamanho_entidade, (int)tamanho_entidade, cor);
+        }
 
         atual = atual->next;
     }

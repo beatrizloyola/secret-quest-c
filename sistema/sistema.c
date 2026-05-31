@@ -13,11 +13,19 @@ static const int num_opcoes = 3;
 static Texture2D background;
 static Texture2D backHUD;
 static Texture2D backOVER;
+static Texture2D texPlayerUp;
+static Texture2D texPlayerDown;
+static Texture2D texPlayerLeft;
+static Texture2D texPlayerRight;
 
 void sistema_carregar_assets(void) {
     background = LoadTexture("assets/background.png");
     backHUD = LoadTexture("assets/backHUD.png");
     backOVER = LoadTexture("assets/backOVER.png");
+    texPlayerUp    = LoadTexture("assets/player_up.png");
+    texPlayerDown  = LoadTexture("assets/player_down.png");
+    texPlayerLeft  = LoadTexture("assets/player_left.png");
+    texPlayerRight = LoadTexture("assets/player_right.png");
 
 }
 
@@ -25,11 +33,28 @@ void sistema_descarregar_assets(void) {
     UnloadTexture(background);
     UnloadTexture(backHUD);
     UnloadTexture(backOVER);
+    UnloadTexture(texPlayerUp);
+    UnloadTexture(texPlayerDown);
+    UnloadTexture(texPlayerLeft);
+    UnloadTexture(texPlayerRight);
 }
 
+// Movimentação player
+Texture2D sistema_get_player_texture(Direcao direcao) {
+    switch (direcao) {
+        case DIR_CIMA:     return texPlayerUp;
+        case DIR_BAIXO:    return texPlayerDown;
+        case DIR_ESQUERDA: return texPlayerLeft;
+        case DIR_DIREITA:  return texPlayerRight;
+    }
+    return texPlayerDown;
+}
+
+// Tela background
 void sistema_desenhar_background(void) {
     DrawTexture(background, 0, 0, WHITE);
 }
+// Tela Game Over
 void sistema_desenhar_background_gameover(void) {
     DrawTexture(backOVER, 0, 0, WHITE);
 }
