@@ -440,9 +440,9 @@ void hud_desenhar(int score, int hp) {
     }
 
     // texto "energia" centralizado
-    int largura_texto = MeasureText("ENERGIA", 20);
+    int largura_texto = MeasureText("Energia", 20);
     int tag_x = px + (pw / 2) - (largura_texto / 2);
-    DrawText("ENERGIA", tag_x, y_hud + 82, 20, GRAY);
+    DrawText("Energia", tag_x, y_hud + 82, 20, GRAY);
 }
 
 // Sistema Ranking
