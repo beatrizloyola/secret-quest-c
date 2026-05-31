@@ -12,6 +12,7 @@ Sala* sala_carregar(const char* arquivo) {
     s->arquivo[63] = '\0'; // Fim do string
     s->num_inimigos = 0; // Qtd inicial
     s->num_itens = 0;
+    s->num_fragmentos = 0; // fragmentos do código espalhados pela sala
     memset(s->inimigos_mortos, 0, sizeof(s->inimigos_mortos));
 
     fscanf(f, "%d %d", &s->largura, &s->altura);
@@ -49,12 +50,14 @@ Sala* sala_carregar(const char* arquivo) {
 
             TileType tipo;
             switch (c) {
-                case '#': tipo = TILE_PAREDE; break; // # vira parede
-                case 'D': tipo = TILE_PORTA;  break; // D vira porta
-                default:  tipo = TILE_CHAO;   break; // O resto é chão (usei .)
+                case '#': tipo = TILE_PAREDE;   break; // # vira parede
+                case 'D': tipo = TILE_PORTA;    break; // D vira porta
+                case 'T': tipo = TILE_TERMINAL; break; // T vira terminal de autodestruição
+                case 'X': tipo = TILE_SAIDA;    break; // X vira saída final da estação
+                default:  tipo = TILE_CHAO;     break; // O resto é chão (usei .)
             }
             s->grid[y][x].tipo   = tipo;
-            s->grid[y][x].solido = (tipo == TILE_PAREDE); // Parede é sólido, o resto não
+            s->grid[y][x].solido = (tipo == TILE_PAREDE); // só parede é sólido; terminal e saída são chão
 
             if (c == 'S') { // Salva spawn de jogador
                 s->spawn_jogador.x = x;
@@ -67,6 +70,11 @@ Sala* sala_carregar(const char* arquivo) {
                 s->spawn_itens[s->num_itens].x = x;
                 s->spawn_itens[s->num_itens].y = y;
                 s->num_itens++; // Salva a posição do item e passa pro próximo índice
+            } else if (c >= 'a' && c <= 'd' && s->num_fragmentos < 4) { // a/b/c/d são fragmentos 0/1/2/3 do código
+                s->spawn_fragmentos[s->num_fragmentos].x = x;
+                s->spawn_fragmentos[s->num_fragmentos].y = y;
+                s->fragmento_ids[s->num_fragmentos]      = c - 'a'; // 'a'→0, 'b'→1, 'c'→2, 'd'→3
+                s->num_fragmentos++;
             }
         }
         fgetc(f); // '\n'
@@ -122,7 +130,14 @@ void sala_desenhar(Sala* s, int cam_x, int cam_y, int tamanho_tile, int cam_larg
             int mx = cam_x + x;
             if (mx >= s->largura || my >= s->altura) continue;
 
-            Color cor = s->grid[my][mx].solido ? YELLOW : BLACK; // Se for parede é amarelo, se não for é preto
+            Color cor;
+            switch (s->grid[my][mx].tipo) { // cada tipo de tile tem sua cor
+                case TILE_PAREDE:   cor = YELLOW;   break;
+                case TILE_PORTA:    cor = DARKGRAY; break;
+                case TILE_TERMINAL: cor = SKYBLUE;  break; // terminal brilha azul
+                case TILE_SAIDA:    cor = MAGENTA;  break; // saída brilha rosa
+                default:            cor = BLACK;    break; // chão é preto
+            }
             DrawRectangle(x * tamanho_tile, y * tamanho_tile, tamanho_tile, tamanho_tile, cor);
         }
     }
