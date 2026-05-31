@@ -256,12 +256,12 @@ void hud_desenhar(int score, int hp) {
     // Score
     char texto[128];
     snprintf(texto, sizeof(texto), "SCORE: %d", score);
-    DrawText(texto, 20, y_hud + 20, 30, WHITE);
+    DrawText(texto, 310, y_hud + 45, 30, WHITE);
 
     // Cilindro oxigênio
 
-    int cx = 360;
-    int cy = y_hud + 20;
+    int cx = 520;
+    int cy = y_hud + 45;
     int cw = 140;
     int ch = 26;
 
@@ -300,13 +300,13 @@ void hud_desenhar(int score, int hp) {
     // texto "oxigênio" centralizado
     int largura_oxg = MeasureText("Oxigênio", 16);
     int o2_x = cx + (cw / 2) - (largura_oxg / 2);
-    DrawText("Oxigênio", o2_x, y_hud + 54, 16, GRAY);
+    DrawText("Oxigênio", o2_x, y_hud + 78, 16, GRAY);
 
     // Pilha | Barra de Energia
     
     // Pilha
-    int px = 800;           //posição horizontal pilha
-    int py = y_hud + 20;    // posição vertical pilha
+    int px = 690;           //posição horizontal pilha
+    int py = y_hud + 45;    // posição vertical pilha
     int pw = 120;           // largura pilha
     int ph = 24;            // altura pilha
     
@@ -345,7 +345,7 @@ void hud_desenhar(int score, int hp) {
     // texto "energia" centralizado
     int largura_texto = MeasureText("ENERGIA", 14);
     int tag_x = px + (pw / 2) - (largura_texto / 2);
-    DrawText("ENERGIA", tag_x, y_hud + 54, 14, GRAY);
+    DrawText("ENERGIA", tag_x, y_hud + 78, 14, GRAY);
 }
 
 // Sistema Ranking (placeholder)
