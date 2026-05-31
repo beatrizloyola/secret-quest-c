@@ -36,8 +36,6 @@ void sistema_desenhar_background_gameover(void) {
 
 void menu_inicializar(void) {
     opcao_selecionada = 0;
-    int largura = GetScreenWidth();
-    int altura = GetScreenHeight();
 }
 void menu_finalizar(void) {
     // vazio por enquanto
@@ -251,10 +249,19 @@ void tela_ranking_desenhar(void) {
     int inicio_y = (altura_tela - altura_total) / 2;
 
     // Titulo
-    const char* titulo = "Ranking";
+    const char* titulo = "RANKING";
     int titulo_largura = MeasureText(titulo, titulo_fonte);
     int titulo_x = (largura_tela - titulo_largura) / 2;
     int titulo_y = inicio_y;
+
+    Color sombra1 = (Color){ 0, 20, 60, 120 };
+    Color sombra2 = (Color){ 0, 50, 100, 160 };
+    Color sombra3 = (Color){ 0, 80, 140, 200 };
+    Color sombra4 = (Color){ 0, 110, 180, 240 };
+    DrawText(titulo, titulo_x + 8, titulo_y + 8, titulo_fonte, sombra1);
+    DrawText(titulo, titulo_x + 6, titulo_y + 6, titulo_fonte, sombra2);
+    DrawText(titulo, titulo_x + 4, titulo_y + 4, titulo_fonte, sombra3);
+    DrawText(titulo, titulo_x + 2, titulo_y + 2, titulo_fonte, sombra4);
     DrawText(titulo, titulo_x, titulo_y, titulo_fonte, YELLOW);
 
     // Bloco de Ranking
@@ -293,7 +300,6 @@ void tela_gameover_desenhar(void) {
     const char* titulo = "GAME OVER";
     int titulo_fonte = 72;
     int instr_fonte = 20;
-    int esp_titulo_instr = 80;
 
     int titulo_largura = MeasureText(titulo, titulo_fonte);
     int titulo_x = (largura_tela - titulo_largura) / 2;
