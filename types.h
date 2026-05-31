@@ -105,6 +105,7 @@ typedef struct {
     int   digitos_coletados;     // bitmask: bit N ligado = fragmento N já foi pego pelo jogador
     int   codigo_ativado;        // vira 1 depois que o jogador digitou o código certo no terminal
     float tempo_restante;        // segundos que sobram pra chegar na saída antes de explodir
+    int   ultimo_fragmento;      // id (0-3) do fragmento recém coletado; -1 se nenhum novo. main.c lê e reseta
 } Fase;
 
 // Template de Recorde

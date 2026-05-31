@@ -675,7 +675,8 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
                 atual->vivo = false;
 
                 if (fase != NULL) {
-                    fase->digitos_coletados |= (1 << atual->spawn_idx); //marca o bit do fragmento como coletado
+                    fase->digitos_coletados  |= (1 << atual->spawn_idx); //marca o bit do fragmento como coletado
+                    fase->ultimo_fragmento    = atual->spawn_idx;         //avisa o main.c qual foi coletado agora
                 }
 
                 if (score != NULL) {

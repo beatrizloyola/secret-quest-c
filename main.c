@@ -198,6 +198,9 @@ int main(void) {
     char codigo_terminal[8]  = {0};  //buffer do código que o jogador está digitando
     int  codigo_terminal_len = 0;    //tamanho atual do buffer
 
+    float timer_msg_frag = 0.0f;     //quanto tempo ainda exibe a mensagem de fragmento coletado
+    char  msg_frag[48]   = {0};      //texto da mensagem (ex: "Fragmento coletado: dígito 4")
+
     float timer_oxigenio = 0.0f; //tempo desde a última queda de oxigênio
 
     Recorde ranking[5];
@@ -241,6 +244,9 @@ int main(void) {
                         nome_input_len = 0;
                         memset(&fase, 0, sizeof(Fase));            //reseta missão ao começar novo jogo
                         fase.codigo_autodestruicao = 4837;
+                        fase.ultimo_fragmento      = -1;           //nenhum fragmento coletado ainda
+                        timer_msg_frag = 0.0f;
+                        msg_frag[0]    = '\0';
                         entrada_terminal   = false;
                         codigo_terminal[0] = '\0';
                         codigo_terminal_len = 0;
@@ -295,6 +301,20 @@ int main(void) {
 
                 if (estado != ESTADO_JOGANDO) {
                     break;
+                }
+
+                // se entidade.c avisou que um fragmento foi coletado, monta a mensagem e liga o timer
+                if (fase.ultimo_fragmento >= 0) {
+                    int codigo = fase.codigo_autodestruicao;
+                    int digitos[4]; //decompõe o código pra mostrar qual dígito esse fragmento revela
+                    digitos[0] = (codigo / 1000) % 10;
+                    digitos[1] = (codigo / 100)  % 10;
+                    digitos[2] = (codigo / 10)   % 10;
+                    digitos[3] =  codigo          % 10;
+                    snprintf(msg_frag, sizeof(msg_frag), "Fragmento %d/4 coletado! Dígito: %d",
+                             fase.ultimo_fragmento + 1, digitos[fase.ultimo_fragmento]);
+                    timer_msg_frag        = 2.5f;
+                    fase.ultimo_fragmento = -1; //reseta pra não mostrar de novo no próximo frame
                 }
 
                 // Abre o terminal ao pisar nele e apertar ENTER com todos os fragmentos coletados
@@ -388,6 +408,13 @@ int main(void) {
                     int frags = 0;
                     for (int i = 0; i < 4; i++) if ((fase.digitos_coletados >> i) & 1) frags++;
                     DrawText(TextFormat("Fragmentos: %d/4", frags), 8, 8, 18, frags == 4 ? ORANGE : LIGHTGRAY);
+
+                    // mensagem temporária de fragmento coletado
+                    if (timer_msg_frag > 0.0f) {
+                        timer_msg_frag -= dt;
+                        int alpha = (timer_msg_frag < 0.5f) ? (int)(timer_msg_frag * 510) : 255; //fade out nos últimos 0.5s
+                        DrawText(msg_frag, 8, 30, 20, (Color){ 255, 180, 0, (unsigned char)alpha });
+                    }
 
                     // contagem regressiva vermelha quando o terminal foi ativado
                     if (fase.codigo_ativado) {
