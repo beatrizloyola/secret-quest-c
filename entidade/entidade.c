@@ -343,8 +343,8 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
     entidade->next = NULL;
 
     if (tipo == ENT_JOGADOR) {      //se o tipo for jogador:
-        entidade->max_hp = 10;
-        entidade->hp = 10;
+        entidade->max_hp = 15;
+        entidade->hp = 15;
         entidade->ataque = 3;
         entidade->velocidade = 4.0f;
     }

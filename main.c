@@ -11,6 +11,7 @@
 #define CAMERA_LARGURA 12
 #define CAMERA_ALTURA  10
 #define SALA_CACHE_MAX 32
+#define ALTURA_HUD 140
 
 static Sala* sala_cache[SALA_CACHE_MAX]; //salas ficam em memória durante toda a partida pra preservar inimigos_mortos
 static int   sala_cache_n = 0;
@@ -177,16 +178,16 @@ static void posicionar_jogador_apos_porta(Sala* sala, Entidade* jogador, Direcao
 
 
 int main(void) {
-    InitWindow(CAMERA_LARGURA * TAMANHO_TILE, CAMERA_ALTURA * TAMANHO_TILE, "Secret Quest");
+    InitWindow(CAMERA_LARGURA * TAMANHO_TILE, (CAMERA_ALTURA * TAMANHO_TILE) + ALTURA_HUD, "Secret Quest");
     SetTargetFPS(60);
 
     menu_inicializar();
+    sistema_carregar_assets();
     EstadoJogo estado = ESTADO_MENU;
     Sala* sala = NULL;
     ListaEntidades* entidades = NULL;
     Entidade* jogador = NULL;
     int score = 0;
-    int player_oxigenio = 100; // placeholder
     bool bloquear_enter_menu = false; //evita que o ENTER do game over já aperte "iniciar jogo" no menu
 
     Recorde ranking[5];
@@ -241,6 +242,22 @@ int main(void) {
 
                 float dt = GetFrameTime();
 
+                // diminuição oxigenio tempo
+                static float timer_oxigenio = 0.0f;
+                timer_oxigenio += dt;
+                if (timer_oxigenio >= 10.0f) {
+                    if (jogador->hp > 0) {
+                        jogador->hp -= 1;
+                    }
+                    timer_oxigenio = 0.0f;
+    
+                    if (jogador->hp <= 0) {
+                        jogador->hp = 0;
+                        jogador->vivo = false;
+                        sistema_transicao(&estado, ESTADO_GAME_OVER);
+                    }
+                }
+
                 entidade_mover_jogador(jogador, sala, dt); //movimentação
 
                 if (IsKeyPressed(KEY_SPACE)) { //porrada 💥💥
@@ -292,6 +309,7 @@ int main(void) {
                     ClearBackground(DARKGRAY);
                     sala_desenhar(sala, cameraX, cameraY, TAMANHO_TILE, CAMERA_LARGURA, CAMERA_ALTURA);
                     lista_desenhar(entidades, sala, cameraX, cameraY, TAMANHO_TILE);
+                    hud_desenhar(score, jogador->hp);
                 EndDrawing();
                 break;
             }
@@ -301,9 +319,9 @@ int main(void) {
                 BeginDrawing();
                 tela_pause_desenhar(
                     sala ? sala->arquivo : NULL,
-                    jogador ? jogador->hp : 0,
+                    jogador ? jogador->hp : 0, // placeholder energia
                     score,
-                    player_oxigenio
+                    jogador ? jogador->hp : 0  // oxigênio real
                 );
                 EndDrawing();
                 break;
@@ -343,15 +361,8 @@ int main(void) {
                     sistema_transicao(&estado, ESTADO_MENU);
                 }
 
-                char buf[64];
                 BeginDrawing();
-                ClearBackground(BLACK);
-                DrawText("GAME OVER", 260, 180, 40, RED);
-                snprintf(buf, sizeof(buf), "Pontuacao: %d", score);
-                DrawText(buf, 260, 240, 20, WHITE);
-                DrawText("Digite seu nome:", 260, 290, 20, GRAY);
-                DrawText(nome_input, 260, 320, 24, YELLOW);
-                DrawText("ENTER para confirmar", 260, 380, 15, GRAY);
+                tela_gameover_desenhar(score, nome_input);
                 EndDrawing();
                 break;
             }
@@ -368,6 +379,7 @@ int main(void) {
     }
     sala_cache_limpar();
     menu_finalizar();
+    sistema_descarregar_assets();
     CloseWindow();
     return 0;
 }

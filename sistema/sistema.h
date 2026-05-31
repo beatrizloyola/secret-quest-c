@@ -17,11 +17,14 @@ void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio)
 void tela_ranking_atualizar(EstadoJogo* estado);
 void tela_ranking_desenhar(Recorde* lista, int count);
 
+// Tela de Game Over
+void tela_gameover_desenhar(int score, const char* nome_input);
+
 // Mudança de telas
 void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado);
 
 // HUD
-void hud_desenhar(int score, int hp);
+void hud_desenhar(int score, int oxigenio);
 
 // Sistema Ranking
 void ranking_carregar(Recorde* lista, int max);
@@ -31,5 +34,12 @@ bool ranking_adicionar(Recorde* lista, int* count, const char* nome, int score);
 // Sistema Save
 void save_salvar(const char* arquivo_sala, int player_x, int player_y, int hp, int score);
 bool save_carregar(char* arquivo_sala_out, int* player_x, int* player_y, int* hp, int* score);
+
+// Assets
+void sistema_carregar_assets(void);
+void sistema_descarregar_assets(void);
+
+void sistema_desenhar_background(void);
+void sistema_desenhar_background_gameover(void);
 
 #endif
