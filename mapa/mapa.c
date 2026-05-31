@@ -133,7 +133,7 @@ void sala_desenhar(Sala* s, int cam_x, int cam_y, int tamanho_tile, int cam_larg
             Color cor;
             switch (s->grid[my][mx].tipo) { // cada tipo de tile tem sua cor
                 case TILE_PAREDE:   cor = YELLOW;   break;
-                case TILE_PORTA:    cor = DARKGRAY; break;
+                case TILE_PORTA:    cor = BLACK;    break;
                 case TILE_TERMINAL: cor = SKYBLUE;  break; // terminal brilha azul
                 case TILE_SAIDA:    cor = MAGENTA;  break; // saída brilha rosa
                 default:            cor = BLACK;    break; // chão é preto
