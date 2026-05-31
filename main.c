@@ -190,6 +190,15 @@ int main(void) {
     int score = 0;
     bool bloquear_enter_menu = false; //evita que o ENTER do game over já aperte "iniciar jogo" no menu
 
+    Fase fase = {0};
+    fase.codigo_autodestruicao = 4837; //código fixo da missão; os 4 fragmentos revelam cada dígito
+
+    bool entrada_terminal = false;   //true quando o jogador está digitando o código no terminal
+    char codigo_terminal[8]  = {0};  //buffer do código que o jogador está digitando
+    int  codigo_terminal_len = 0;    //tamanho atual do buffer
+
+    float timer_oxigenio = 0.0f; //tempo desde a última queda de oxigênio
+
     Recorde ranking[5];
     int ranking_count = 0;
     char nome_input[16] = {0};
@@ -226,10 +235,16 @@ int main(void) {
                     sala = sala_obter("mapa/salas/sala1.txt");
                     if (sala) {
                         entidades = lista_criar();
-                        lista_spawnar_sala(entidades, sala, &jogador);
                         score = 0;
                         nome_input[0] = '\0';
                         nome_input_len = 0;
+                        memset(&fase, 0, sizeof(Fase));            //reseta missão ao começar novo jogo
+                        fase.codigo_autodestruicao = 4837;
+                        entrada_terminal   = false;
+                        codigo_terminal[0] = '\0';
+                        codigo_terminal_len = 0;
+                        timer_oxigenio = 0.0f;
+                        lista_spawnar_sala(entidades, sala, &jogador, &fase);
                     }
                 }
 
@@ -242,8 +257,17 @@ int main(void) {
 
                 float dt = GetFrameTime();
 
-                // diminuição oxigenio tempo
-                static float timer_oxigenio = 0.0f;
+                // contagem regressiva depois de ativar o terminal (20s pra chegar na saída)
+                if (fase.codigo_ativado) {
+                    fase.tempo_restante -= dt;
+                    if (fase.tempo_restante <= 0.0f) { //kaboom
+                        fase.tempo_restante = 0.0f;
+                        sistema_transicao(&estado, ESTADO_GAME_OVER);
+                        break;
+                    }
+                }
+
+                // diminuição de oxigênio ao longo do tempo
                 timer_oxigenio += dt;
                 if (timer_oxigenio >= 10.0f) {
                     if (jogador->hp > 0) {
@@ -258,21 +282,69 @@ int main(void) {
                     }
                 }
 
-                entidade_mover_jogador(jogador, sala, dt); //movimentação
+                if (!entrada_terminal) { //bloqueia movimento e ataque enquanto o jogador tá no terminal
+                    entidade_mover_jogador(jogador, sala, dt);
 
-                if (IsKeyPressed(KEY_SPACE)) { //porrada 💥💥
-                    entidade_atacar(jogador, entidades, sala, 1, &score);
+                    if (IsKeyPressed(KEY_SPACE)) { //porrada 💥💥
+                        entidade_atacar(jogador, entidades, sala, 1, &score);
+                    }
                 }
 
-                lista_atualizar(entidades, sala, jogador, dt, &score, &estado); //atualiza IA, dano, cooldown e coleta de item
+                lista_atualizar(entidades, sala, jogador, dt, &score, &estado, &fase); //atualiza IA, dano, cooldown, coleta de item e fragmento
 
                 if (estado != ESTADO_JOGANDO) {
                     break;
                 }
 
+                // Abre o terminal ao pisar nele e apertar ESPAÇO com todos os fragmentos coletados
+                if (!entrada_terminal && sala->grid[jogador->pos.y][jogador->pos.x].tipo == TILE_TERMINAL) {
+                    if (IsKeyPressed(KEY_SPACE) && fase.digitos_coletados == 0b1111) { //só abre se os 4 fragmentos foram coletados
+                        entrada_terminal = true;
+                        codigo_terminal[0] = '\0';
+                        codigo_terminal_len = 0;
+                    }
+                }
+
+                // Input do terminal: jogador digita o código de 4 dígitos
+                if (entrada_terminal) {
+                    int c = GetCharPressed();
+                    while (c > 0) {
+                        if (c >= '0' && c <= '9' && codigo_terminal_len < 4) { //aceita só dígitos, máximo 4
+                            codigo_terminal[codigo_terminal_len++] = (char)c;
+                            codigo_terminal[codigo_terminal_len]   = '\0';
+                        }
+                        c = GetCharPressed();
+                    }
+                    if (IsKeyPressed(KEY_BACKSPACE) && codigo_terminal_len > 0) {
+                        codigo_terminal[--codigo_terminal_len] = '\0';
+                    }
+                    if (IsKeyPressed(KEY_ESCAPE)) { //ESC cancela sem ativar nada
+                        entrada_terminal = false;
+                    }
+                    if (IsKeyPressed(KEY_ENTER) && codigo_terminal_len == 4) {
+                        int tentativa = 0; //converte string de dígitos pra inteiro
+                        for (int i = 0; i < codigo_terminal_len; i++) {
+                            tentativa = tentativa * 10 + (codigo_terminal[i] - '0');
+                        }
+                        if (tentativa == fase.codigo_autodestruicao) { //acertou! começa a contagem regressiva
+                            fase.codigo_ativado  = 1;
+                            fase.tempo_restante  = 20.0f;
+                        }
+                        entrada_terminal = false; //fecha o terminal independente de acertar ou errar
+                    }
+                }
+
+                // Sai pela saída final se o terminal já foi ativado
+                if (!entrada_terminal && sala->grid[jogador->pos.y][jogador->pos.x].tipo == TILE_SAIDA) {
+                    if (fase.codigo_ativado) { //só conta se a autodestruição foi ativada
+                        sistema_transicao(&estado, ESTADO_VITORIA);
+                        break;
+                    }
+                }
+
                 // Troca de sala ao pisar em porta
                 //mudou pouca coisa, ele pega o "centro" aproximado do jogador (jogador->pos.x/.y) e verifica se ta numa tile que seria a porta
-                if (sala->grid[jogador->pos.y][jogador->pos.x].tipo == TILE_PORTA) {
+                if (!entrada_terminal && sala->grid[jogador->pos.y][jogador->pos.x].tipo == TILE_PORTA) {
                     Direcao dir    = sala_direcao_porta(sala, jogador->pos.x, jogador->pos.y);
                     const char* proxima = sala_saida_em(sala, jogador->pos.x, jogador->pos.y);
                     if (proxima) {
@@ -286,7 +358,7 @@ int main(void) {
                             sala = nova;
 
                             entidades = lista_criar(); //cria novas entidades na sala nova
-                            lista_spawnar_sala(entidades, sala, &jogador);
+                            lista_spawnar_sala(entidades, sala, &jogador, &fase);
 
                             jogador->hp = hp_anterior; //mantém a vida do jogador ao trocar de sala
                             posicionar_jogador_apos_porta(sala, jogador, dir); //evita q o bichinho apareça dentro da parede
@@ -310,6 +382,25 @@ int main(void) {
                     sala_desenhar(sala, cameraX, cameraY, TAMANHO_TILE, CAMERA_LARGURA, CAMERA_ALTURA);
                     lista_desenhar(entidades, sala, cameraX, cameraY, TAMANHO_TILE);
                     hud_desenhar(score, jogador->hp);
+
+                    // mostra quantos fragmentos foram coletados no canto da tela
+                    int frags = 0;
+                    for (int i = 0; i < 4; i++) if ((fase.digitos_coletados >> i) & 1) frags++;
+                    DrawText(TextFormat("Fragmentos: %d/4", frags), 8, 8, 18, frags == 4 ? ORANGE : LIGHTGRAY);
+
+                    // contagem regressiva vermelha quando o terminal foi ativado
+                    if (fase.codigo_ativado) {
+                        DrawText(TextFormat("TEMPO: %.0f", fase.tempo_restante), CAMERA_LARGURA * TAMANHO_TILE / 2 - 60, 8, 24, RED);
+                    }
+
+                    // overlay do terminal: escurece a tela e mostra o campo de input do código
+                    if (entrada_terminal) {
+                        DrawRectangle(0, 0, CAMERA_LARGURA * TAMANHO_TILE, CAMERA_ALTURA * TAMANHO_TILE, (Color){ 0, 0, 0, 160 });
+                        DrawText("TERMINAL DE AUTODESTRUIÇÃO",  180, 220, 22, SKYBLUE);
+                        DrawText("Digite o código:",            180, 270, 20, LIGHTGRAY);
+                        DrawText(codigo_terminal,               180, 300, 32, YELLOW);
+                        DrawText("ENTER confirma  |  ESC cancela", 180, 360, 15, GRAY);
+                    }
                 EndDrawing();
                 break;
             }
@@ -367,6 +458,24 @@ int main(void) {
                 break;
             }
                 
+            case ESTADO_VITORIA: {
+                tela_vitoria_atualizar(&estado);
+                if (estado == ESTADO_MENU) { //voltou pro menu: limpa tudo igual ao game over
+                    if (entidades) {
+                        lista_limpar(entidades);
+                        entidades = NULL;
+                    }
+                    sala_cache_limpar();
+                    sala = NULL;
+                    jogador = NULL;
+                    bloquear_enter_menu = true;
+                }
+                BeginDrawing();
+                tela_vitoria_desenhar(score);
+                EndDrawing();
+                break;
+            }
+
             default:
                 BeginDrawing();
                 ClearBackground(BLACK);
