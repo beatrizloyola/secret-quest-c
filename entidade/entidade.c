@@ -539,6 +539,13 @@ static void aplicar_dano_ataque(Entidade* atacante, ListaEntidades* alvos, Sala*
                     *score += 100;
                 }
 
+                if (GetRandomValue(0, 9) < 6) { //60% de chance de dropar oxigênio ou energia
+                    Entidade* drop = entidade_criar(ENT_ITEM, atual->pos.x, atual->pos.y);
+                    drop->ataque    = GetRandomValue(1, 2); //1 = oxigênio, 2 = energia
+                    drop->spawn_idx = -1;
+                    lista_adicionar(alvos, drop);
+                }
+
                 lista_remover(alvos, atual);
             }
 
@@ -615,6 +622,13 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
                         *score += 100;
                     }
 
+                    if (GetRandomValue(0, 9) < 6) { //60% de chance de dropar oxigênio ou energia
+                        Entidade* drop = entidade_criar(ENT_ITEM, atual->pos.x, atual->pos.y);
+                        drop->ataque   = GetRandomValue(1, 2); //1 = oxigênio, 2 = energia
+                        drop->spawn_idx = -1;
+                        lista_adicionar(lista, drop);
+                    }
+
                     lista_remover(lista, atual);
                     atual = proximo;
                     continue;
@@ -663,8 +677,14 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
             if (entidades_encostando(atual, jogador)) { //se o jogador encostar no item, coleta
                 atual->vivo = false;
 
-                if (score != NULL) {
-                    *score += 250;
+                if (atual->ataque == 0) { //item normal do mapa: só score
+                    if (score != NULL) *score += 250;
+                } else { //drop de inimigo (1=oxigênio, 2=energia): restaura HP e dá score menor
+                    if (jogador->hp < jogador->max_hp) {
+                        jogador->hp += 3; //cura 3 de HP
+                        if (jogador->hp > jogador->max_hp) jogador->hp = jogador->max_hp;
+                    }
+                    if (score != NULL) *score += 50;
                 }
 
                 lista_remover(lista, atual);
@@ -712,7 +732,9 @@ void lista_desenhar(ListaEntidades* lista, Sala* sala, int cam_x, int cam_y, int
             cor = RED;
         }
         else if (atual->tipo == ENT_ITEM) {
-            cor = GREEN;
+            if (atual->ataque == 1) cor = SKYBLUE; //drop oxigênio: azul claro
+            else if (atual->ataque == 2) cor = LIME;    //drop energia: verde limão
+            else cor = GREEN;                            //item normal do mapa: verde
         }
         else if (atual->tipo == ENT_FRAGMENTO) {
             cor = ORANGE; //fragmento do código aparece laranja pra se destacar do item verde
