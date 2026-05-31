@@ -180,6 +180,7 @@ static void posicionar_jogador_apos_porta(Sala* sala, Entidade* jogador, Direcao
 int main(void) {
     InitWindow(CAMERA_LARGURA * TAMANHO_TILE, (CAMERA_ALTURA * TAMANHO_TILE) + ALTURA_HUD, "Secret Quest");
     SetTargetFPS(60);
+    SetExitKey(KEY_NULL); //desabilita ESC fechar janela; janela fecha só pelo X ou pelo menu Sair
 
     menu_inicializar();
     sistema_carregar_assets();
@@ -250,7 +251,7 @@ int main(void) {
 
                 if (!sala || !entidades || !jogador) break;
 
-                if (IsKeyPressed(KEY_TAB)) {
+                if (IsKeyPressed(KEY_ESCAPE) && !entrada_terminal) { //ESC abre pause; se o terminal estiver aberto, ESC fecha o terminal (tratado abaixo)
                     sistema_transicao(&estado, ESTADO_PAUSE);
                     break;
                 }
