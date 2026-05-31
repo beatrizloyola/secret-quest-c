@@ -143,7 +143,7 @@ void menu_desenhar(void) {
     DrawLine(linha2_x, linha2_y + 1, linha2_x + linha2_largura, linha2_y + 1, (Color){ 200, 200, 200, 120 });
 
     // Instruções centralizadas na base
-    const char* instrucoes = "Use ↑ / ↓ para navegar. Use ENTER para confirmar";
+    const char* instrucoes = "CIMA / BAIXO para navegar. ENTER para confirmar";
     int instr_largura = MeasureText(instrucoes, instr_fonte);
     int instr_x = (largura_tela - instr_largura) / 2;
     int instr_y = opcoes_inicio_y + opcoes_altura_total + esp_opcoes_instr;
