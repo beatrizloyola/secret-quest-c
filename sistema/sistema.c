@@ -11,13 +11,17 @@ static int opcao_selecionada = 0;
 static const char* opcoes[] = { "Iniciar Jogo", "Ranking", "Sair" };
 static const int num_opcoes = 3;
 static Texture2D background;
+static Texture2D backHUD;
 
 void sistema_carregar_assets(void) {
     background = LoadTexture("assets/background.png");
+    backHUD = LoadTexture("assets/backHUD.png");
+
 }
 
 void sistema_descarregar_assets(void) {
     UnloadTexture(background);
+    UnloadTexture(backHUD);
 }
 
 void sistema_desenhar_background(void) {
@@ -183,12 +187,12 @@ void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado) {
 // HUD
 void hud_desenhar(int score, int hp) {
     // Config
-    int altura_hud  = 80;
+    int altura_hud  = 140;
     int largura     = GetScreenWidth();   // 960
     int y_hud       = GetScreenHeight() - altura_hud;  // 880 - 80 = 800
     int energia     = hp;                  // placeholder
 
-    DrawRectangle(0, y_hud, largura, altura_hud, BLACK);
+    DrawTexture(backHUD, 0, y_hud, GRAY);
 
     // Score
     char texto[128];

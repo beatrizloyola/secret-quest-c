@@ -10,7 +10,7 @@
 #define CAMERA_LARGURA 12
 #define CAMERA_ALTURA  10
 #define SALA_CACHE_MAX 32
-#define ALTURA_HUD 80
+#define ALTURA_HUD 140
 
 static Sala* sala_cache[SALA_CACHE_MAX]; //salas ficam em memória durante toda a partida pra preservar inimigos_mortos
 static int   sala_cache_n = 0;
