@@ -179,10 +179,53 @@ void tela_ranking_atualizar(EstadoJogo* estado) {
     }
 }
 void tela_ranking_desenhar(void) {
+    int largura_tela = GetScreenWidth();
+    int altura_tela = GetScreenHeight();
+
     sistema_desenhar_background();
-    DrawText("RANKING", 100, 80, 40, YELLOW);
-    DrawText("--- Em breve ---", 100, 160, 20, GRAY);
-    DrawText("Pressione ENTER para voltar", 100, 360, 15, GRAY);
+    int titulo_fonte = 72;
+    int ret_largura = 560;
+    int ret_altura = 420;
+    int esp_titulo_ret = 40;
+    int esp_ret_instr = 40;
+    int instr_fonte = 20;
+    int slot_fonte = 24;
+    int num_slots = 7;
+
+    // Calcula a altura do bloco para centralizar no y
+    int altura_total = titulo_fonte + esp_titulo_ret + ret_altura + esp_ret_instr + instr_fonte;
+    int inicio_y = (altura_tela - altura_total) / 2;
+
+    // Titulo
+    const char* titulo = "Ranking";
+    int titulo_largura = MeasureText(titulo, titulo_fonte);
+    int titulo_x = (largura_tela - titulo_largura) / 2;
+    int titulo_y = inicio_y;
+    DrawText(titulo, titulo_x, titulo_y, titulo_fonte, YELLOW);
+
+    // Bloco de Ranking
+    int ret_x = (largura_tela - ret_largura) / 2;
+    int ret_y = titulo_y + titulo_fonte + esp_titulo_ret;
+    DrawRectangle(ret_x, ret_y, ret_largura, ret_altura, (Color){ 60, 60, 70, 255 });
+    DrawRectangleLines(ret_x, ret_y, ret_largura, ret_altura, WHITE);
+
+    // Slots de ranking (Placeholder)
+    int slot_x = ret_x + 40;
+    int slot_inicio_y = ret_y + 35;
+    int slot_espaco = 55;
+
+    for (int i = 0; i < num_slots; i++) {
+        char slot_texto[64];
+        snprintf(slot_texto, sizeof(slot_texto), "%d. --- ........... 000", i + 1);
+        DrawText(slot_texto, slot_x, slot_inicio_y + i * slot_espaco, slot_fonte, (Color){ 180, 180, 180, 255 });
+    }
+
+    // Intruções embaixo do ranking
+    const char* instrucao = "Pressione ENTER para voltar";
+    int instr_largura = MeasureText(instrucao, instr_fonte);
+    int instr_x = (largura_tela - instr_largura) / 2;
+    int instr_y = ret_y + ret_altura + esp_ret_instr;
+    DrawText(instrucao, instr_x, instr_y, instr_fonte, (Color){ 200, 200, 200, 255 });
 }
 
 // Menu Game Over
