@@ -320,9 +320,7 @@ int main(void) {
 
             case ESTADO_GAME_OVER:
                 BeginDrawing();
-                sistema_desenhar_background();
-                DrawText("GAME OVER", 260, 250, 40, RED);
-                DrawText("Pressione ENTER para voltar ao menu", 250, 320, 20, WHITE);
+                tela_gameover_desenhar();
                 EndDrawing();
 
                 if (IsKeyPressed(KEY_ENTER)) {

@@ -17,6 +17,9 @@ void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio)
 void tela_ranking_atualizar(EstadoJogo* estado);
 void tela_ranking_desenhar(void);
 
+// Tela de Game Over
+void tela_gameover_desenhar(void);
+
 // Mudança de telas
 void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado);
 
@@ -37,5 +40,6 @@ void sistema_carregar_assets(void);
 void sistema_descarregar_assets(void);
 
 void sistema_desenhar_background(void);
+void sistema_desenhar_background_gameover(void);
 
 #endif

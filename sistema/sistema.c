@@ -12,20 +12,26 @@ static const char* opcoes[] = { "Iniciar Jogo", "Ranking", "Sair" };
 static const int num_opcoes = 3;
 static Texture2D background;
 static Texture2D backHUD;
+static Texture2D backOVER;
 
 void sistema_carregar_assets(void) {
     background = LoadTexture("assets/background.png");
     backHUD = LoadTexture("assets/backHUD.png");
+    backOVER = LoadTexture("assets/backOVER.png");
 
 }
 
 void sistema_descarregar_assets(void) {
     UnloadTexture(background);
     UnloadTexture(backHUD);
+    UnloadTexture(backOVER);
 }
 
 void sistema_desenhar_background(void) {
     DrawTexture(background, 0, 0, WHITE);
+}
+void sistema_desenhar_background_gameover(void) {
+    DrawTexture(backOVER, 0, 0, WHITE);
 }
 
 void menu_inicializar(void) {
@@ -179,6 +185,59 @@ void tela_ranking_desenhar(void) {
     DrawText("Pressione ENTER para voltar", 100, 360, 15, GRAY);
 }
 
+// Menu Game Over
+void tela_gameover_desenhar(void) {
+    int largura_tela = GetScreenWidth();
+    int altura_tela = GetScreenHeight();
+    float tempo = (float)GetTime();
+
+    sistema_desenhar_background_gameover();
+
+    const char* titulo = "GAME OVER";
+    int titulo_fonte = 72;
+    int instr_fonte = 20;
+    int esp_titulo_instr = 80;
+
+    int titulo_largura = MeasureText(titulo, titulo_fonte);
+    int titulo_x = (largura_tela - titulo_largura) / 2;
+    int titulo_y = (altura_tela / 2) - 200;
+
+    // Texto pulsando
+    int alpha = (int)(220.0f + 35.0f * sinf(tempo * 2.0f));
+    if (alpha > 255) alpha = 255;
+    if (alpha < 0) alpha = 0;
+
+    Color cor_principal = (Color){ 255, 40, 40, (unsigned char)alpha };
+
+    // Sombra em camadas
+    Color sombra1 = (Color){ 80, 0, 0, 120 };
+    Color sombra2 = (Color){ 120, 0, 0, 160 };
+    Color sombra3 = (Color){ 160, 0, 0, 200 };
+    Color sombra4 = (Color){ 200, 0, 0, 240 };
+
+    DrawText(titulo, titulo_x + 8, titulo_y + 8, titulo_fonte, sombra1);
+    DrawText(titulo, titulo_x + 6, titulo_y + 6, titulo_fonte, sombra2);
+    DrawText(titulo, titulo_x + 4, titulo_y + 4, titulo_fonte, sombra3);
+    DrawText(titulo, titulo_x + 2, titulo_y + 2, titulo_fonte, sombra4);
+
+    // Texto principal
+    DrawText(titulo, titulo_x, titulo_y, titulo_fonte, cor_principal);
+
+    // Linha divisória
+    int linha_y = titulo_y + titulo_fonte + 20;
+    int linha_largura = titulo_largura + 40;
+    int linha_x = (largura_tela - linha_largura) / 2;
+    DrawLine(linha_x, linha_y, linha_x + linha_largura, linha_y, (Color){ 255, 255, 255, 180 });
+
+    // Instrução centralizada
+    const char* instrucao = "Pressione ENTER para voltar ao menu";
+    int instr_largura = MeasureText(instrucao, instr_fonte);
+    int instr_x = (largura_tela - instr_largura) / 2;
+    int instr_y = linha_y + 30;
+
+    DrawText(instrucao, instr_x, instr_y, instr_fonte, (Color){ 255, 255, 255, 200 });
+}
+
 // Mudança de Telas
 void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado) {
     *estado_atual = novo_estado;
@@ -188,8 +247,8 @@ void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado) {
 void hud_desenhar(int score, int hp) {
     // Config
     int altura_hud  = 140;
-    int largura     = GetScreenWidth();   // 960
-    int y_hud       = GetScreenHeight() - altura_hud;  // 880 - 80 = 800
+    int largura     = GetScreenWidth();
+    int y_hud       = GetScreenHeight() - altura_hud;
     int energia     = hp;                  // placeholder
 
     DrawTexture(backHUD, 0, y_hud, GRAY);
