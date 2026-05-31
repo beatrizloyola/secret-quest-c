@@ -408,18 +408,15 @@ int main(void) {
                     ClearBackground(DARKGRAY);
                     sala_desenhar(sala, cameraX, cameraY, TAMANHO_TILE, CAMERA_LARGURA, CAMERA_ALTURA);
                     lista_desenhar(entidades, sala, cameraX, cameraY, TAMANHO_TILE);
-                    hud_desenhar(score, jogador->oxigenio, jogador->hp); //barras separadas: oxigênio e energia
+                    hud_desenhar(score, jogador->oxigenio, jogador->hp, fase.digitos_coletados); //barras separadas: oxigênio e energia
 
-                    // mostra quantos fragmentos foram coletados no canto da tela
-                    int frags = 0;
-                    for (int i = 0; i < 4; i++) if ((fase.digitos_coletados >> i) & 1) frags++;
-                    DrawText(TextFormat("Fragmentos: %d/4", frags), 8, 8, 18, frags == 4 ? ORANGE : BLACK);
-
-                    // mensagem temporária de fragmento coletado
+                    // mensagem temporária de fragmento coletado (aparece no centro da tela por cima)
                     if (timer_msg_frag > 0.0f) {
                         timer_msg_frag -= dt;
                         int alpha = (timer_msg_frag < 0.5f) ? (int)(timer_msg_frag * 510) : 255; //fade out nos últimos 0.5s
-                        DrawText(msg_frag, 8, 30, 20, (Color){ 255, 180, 0, (unsigned char)alpha });
+                        int msg_largura = MeasureText(msg_frag, 20);
+                        int msg_x = (GetScreenWidth() - msg_largura) / 2;
+                        DrawText(msg_frag, msg_x, 250, 20, (Color){ 255, 180, 0, (unsigned char)alpha });
                     }
 
                     // contagem regressiva vermelha quando o terminal foi ativado
@@ -446,7 +443,8 @@ int main(void) {
                     sala ? sala->arquivo : NULL,
                     jogador ? jogador->hp       : 0, //energia (dano de combate)
                     score,
-                    jogador ? jogador->oxigenio : 0  //oxigênio (drena com tempo)
+                    jogador ? jogador->oxigenio : 0, //oxigênio (drena com tempo)
+                    fase.digitos_coletados
                 );
                 EndDrawing();
                 break;

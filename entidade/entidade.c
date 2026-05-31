@@ -790,6 +790,21 @@ void lista_desenhar(ListaEntidades* lista, Sala* sala, int cam_x, int cam_y, int
             Texture2D tex = sistema_get_enemy_texture(atual->sprite_idx);
             float scale = tamanho_entidade / (float)tex.width;
             DrawTextureEx(tex, (Vector2){tela_x, tela_y}, 0.0f, scale, WHITE);
+        } else if (atual->tipo == ENT_ITEM) {
+            Texture2D tex;
+            if (atual->ataque == 1)      tex = sistema_get_oxigenio_item_texture();
+            else if (atual->ataque == 2) tex = sistema_get_pilha_texture();
+            else                         tex = sistema_get_moeda_texture();
+            float tamanho_desenho = tamanho_entidade * 1.8f;
+            float deslocamento = (tamanho_desenho - tamanho_entidade) / 2.0f;
+            float scale = tamanho_desenho / (float)tex.width;
+            DrawTextureEx(tex, (Vector2){tela_x - deslocamento, tela_y - deslocamento}, 0.0f, scale, WHITE);
+        } else if (atual->tipo == ENT_FRAGMENTO) {
+            Texture2D tex = sistema_get_fragmento_texture();
+            float tamanho_desenho = tamanho_entidade * 1.8f;
+            float deslocamento = (tamanho_desenho - tamanho_entidade) / 2.0f;
+            float scale = tamanho_desenho / (float)tex.width;
+            DrawTextureEx(tex, (Vector2){tela_x - deslocamento, tela_y - deslocamento}, 0.0f, scale, WHITE);
         } else {
             DrawRectangle((int)tela_x, (int)tela_y, (int)tamanho_entidade, (int)tamanho_entidade, cor);
         }
