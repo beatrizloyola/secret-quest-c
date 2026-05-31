@@ -153,19 +153,77 @@ void tela_pause_atualizar(EstadoJogo* estado) {
     }
 }
 void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio) {
-    ClearBackground(DARKBLUE);
-    DrawText("STATUS DO ASTRONAUTA", 80, 60, 30, YELLOW);
-    // Placeholders com layout limpo
+    int largura_tela = GetScreenWidth();
+    int altura_tela = GetScreenHeight();
+
+    sistema_desenhar_background();
+    int titulo_fonte = 64;
+    int subtitulo_fonte = 32;
+    int ret_largura = 560;
+    int ret_altura = 380;
+    int info_fonte = 28;
+    int instr_fonte = 20;
+    int esp_titulo_sub = 15;
+    int esp_sub_ret = 30;
+    int esp_ret_instr = 30;
+
+    // Calcula altura do bloco para centralizar no y
+    int altura_total = titulo_fonte + esp_titulo_sub + subtitulo_fonte + esp_sub_ret + ret_altura + esp_ret_instr + instr_fonte;
+    int inicio_y = (altura_tela - altura_total) / 2;
+
+    // Titulo "PAUSE"
+    const char* titulo = "PAUSE";
+    int titulo_largura = MeasureText(titulo, titulo_fonte);
+    int titulo_x = (largura_tela - titulo_largura) / 2;
+    int titulo_y = inicio_y;
+
+    Color sombra1 = (Color){ 0, 20, 60, 120 };
+    Color sombra2 = (Color){ 0, 50, 100, 160 };
+    Color sombra3 = (Color){ 0, 80, 140, 200 };
+    Color sombra4 = (Color){ 0, 110, 180, 240 };
+    DrawText(titulo, titulo_x + 8, titulo_y + 8, titulo_fonte, sombra1);
+    DrawText(titulo, titulo_x + 6, titulo_y + 6, titulo_fonte, sombra2);
+    DrawText(titulo, titulo_x + 4, titulo_y + 4, titulo_fonte, sombra3);
+    DrawText(titulo, titulo_x + 2, titulo_y + 2, titulo_fonte, sombra4);
+    DrawText(titulo, titulo_x, titulo_y, titulo_fonte, YELLOW);
+
+    // Subtitulo
+    const char* subtitulo = "Status do Astronauta";
+    int subtitulo_largura = MeasureText(subtitulo, subtitulo_fonte);
+    int subtitulo_x = (largura_tela - subtitulo_largura) / 2;
+    int subtitulo_y = titulo_y + titulo_fonte + esp_titulo_sub;
+    DrawText(subtitulo, subtitulo_x, subtitulo_y, subtitulo_fonte, (Color){ 180, 180, 180, 255 });
+
+    // Bloco
+    int ret_x = (largura_tela - ret_largura) / 2;
+    int ret_y = subtitulo_y + subtitulo_fonte + esp_sub_ret;
+    DrawRectangle(ret_x, ret_y, ret_largura, ret_altura, (Color){ 0, 0, 0, 255 });
+    DrawRectangleLines(ret_x, ret_y, ret_largura, ret_altura, WHITE);
+
+    // Status dentro do bloco
     char buffer[128];
+    int info_x = ret_x + 40;
+    int info_inicio_y = ret_y + 45;
+    int info_espaco = 70;
+
     snprintf(buffer, sizeof(buffer), "Sala Atual: %s", nome_sala ? nome_sala : "Desconhecida");
-    DrawText(buffer, 80, 120, 20, WHITE);
-    snprintf(buffer, sizeof(buffer), "Energia: %d / %d", hp, 10);
-    DrawText(buffer, 80, 160, 20, WHITE);
+    DrawText(buffer, info_x, info_inicio_y, info_fonte, WHITE);
+
+    snprintf(buffer, sizeof(buffer), "Energia: %d / %d", hp, 15);
+    DrawText(buffer, info_x, info_inicio_y + info_espaco, info_fonte, WHITE);
+
     snprintf(buffer, sizeof(buffer), "Oxigenio: %d / %d", oxigenio, 15);
-    DrawText(buffer, 80, 200, 20, WHITE);
+    DrawText(buffer, info_x, info_inicio_y + 2 * info_espaco, info_fonte, WHITE);
+
     snprintf(buffer, sizeof(buffer), "Pontuacao: %d", score);
-    DrawText(buffer, 80, 240, 20, WHITE);
-    DrawText("Pressione ENTER para voltar", 80, 360, 15, GRAY);
+    DrawText(buffer, info_x, info_inicio_y + 3 * info_espaco, info_fonte, WHITE);
+
+    // Instruções embaixo do status
+    const char* instrucao = "Pressione ENTER para voltar";
+    int instr_largura = MeasureText(instrucao, instr_fonte);
+    int instr_x = (largura_tela - instr_largura) / 2;
+    int instr_y = ret_y + ret_altura + esp_ret_instr;
+    DrawText(instrucao, instr_x, instr_y, instr_fonte, (Color){ 200, 200, 200, 255 });
 }
 
 // Menu Ranking
