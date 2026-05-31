@@ -223,25 +223,56 @@ static bool entidade_dentro_ataque(Entidade* atacante, Sala* sala, Entidade* alv
     return retangulos_encostando(ataque_esq, ataque_dir, ataque_cima, ataque_baixo, alvo_esq, alvo_dir, alvo_cima, alvo_baixo);
 }
 
-static void desenhar_debug_ataque(Entidade* atacante, Sala* sala, int cam_x, int cam_y, int tamanho_tile) { //desenha em verde o retângulo real da espada, preso ao jogador, só pra debug
-    if (atacante == NULL || sala == NULL || atacante->timer_debug_ataque <= 0.0f) { //pegaram o meu codigo :c
+// Animação ataque
+
+static void desenhar_ataque(Entidade* atacante, Sala* sala, int cam_x, int cam_y, int tamanho_tile) {
+    if (atacante == NULL || sala == NULL || atacante->timer_debug_ataque <= 0.0f) {
         return;
     }
 
-    if (ataque_bloqueado_por_parede(atacante, sala)) { //se tem parede na frente, não pinta a espada atravessando parede
+    if (ataque_bloqueado_por_parede(atacante, sala)) {
         return;
     }
 
-    float ataque_esq, ataque_dir, ataque_cima, ataque_baixo;
-    ataque_retangulo(atacante, &ataque_esq, &ataque_dir, &ataque_cima, &ataque_baixo);
+    // Tempo animação
+    float tempo_passado = 0.5f - atacante->timer_debug_ataque;
+    int frame = (int)(tempo_passado / 0.1f);
+    if (frame < 0) frame = 0;
+    if (frame > 4) frame = 4;
+    Texture2D tex = sistema_get_ataque_texture(frame);
 
-    DrawRectangle(
-        (int)((ataque_esq - cam_x) * tamanho_tile),
-        (int)((ataque_cima - cam_y) * tamanho_tile),
-        (int)((ataque_dir - ataque_esq) * tamanho_tile),
-        (int)((ataque_baixo - ataque_cima) * tamanho_tile),
-        GREEN
-    );
+    // Rotação da animação
+    float rotacao = 0.0f;
+    switch (atacante->direcao) {
+        case DIR_DIREITA: rotacao = 90.0f;break;
+        case DIR_BAIXO: rotacao = 180.0f;break;
+        case DIR_ESQUERDA: rotacao = 270.0f;break;
+        case DIR_CIMA: rotacao = 0.0f;break;
+    }
+
+    // Escala animação
+    float escala = 2.5f;
+    float tamanho = tex.width * escala;
+
+    // Posicionamento ataque
+    float offset_x = 0.0f;
+    float offset_y = 0.0f;
+    switch (atacante->direcao) {
+        case DIR_DIREITA:  offset_x =  0.6f; break;
+        case DIR_ESQUERDA: offset_x = -0.6f; break;
+        case DIR_BAIXO:    offset_y =  0.6f; break;
+        case DIR_CIMA:     offset_y = -0.6f; break;
+    }
+
+    float centro_x = (atacante->x + offset_x - cam_x) * tamanho_tile;
+    float centro_y = (atacante->y + offset_y - cam_y) * tamanho_tile;
+
+    // Desenho com rotação
+    Rectangle source = {0, 0, (float)tex.width, (float)tex.height};
+    Rectangle dest = {centro_x, centro_y, tamanho, tamanho};
+    Vector2 origin = {tamanho / 2.0f, tamanho / 2.0f};
+
+    DrawTexturePro(tex, source, dest, origin, rotacao, WHITE);
 }
 
 #define INIMIGO_ALCANCE_VISAO 6 //distância em tiles pra inimigo começar a perseguir o jogador
@@ -726,8 +757,8 @@ void lista_desenhar(ListaEntidades* lista, Sala* sala, int cam_x, int cam_y, int
     Entidade* atual = lista->head;
 
     while (atual != NULL) {
-        if (atual->tipo == ENT_JOGADOR) { //desenha primeiro a hitbox do ataque pra entidade aparecer por cima dela
-            desenhar_debug_ataque(atual, sala, cam_x, cam_y, tamanho_tile);
+        if (atual->tipo == ENT_JOGADOR) {
+            desenhar_ataque(atual, sala, cam_x, cam_y, tamanho_tile);
         }
 
         Color cor = WHITE;
