@@ -276,7 +276,7 @@ int main(void) {
 
                 // oxigênio drena com o tempo; energia só é afetada por inimigos
                 timer_oxigenio += dt;
-                if (timer_oxigenio >= 7.0f) {
+                if (timer_oxigenio >= 4.67f) {
                     timer_oxigenio = 0.0f;
                     jogador->oxigenio--;
                     if (jogador->oxigenio <= 0) {
@@ -289,14 +289,9 @@ int main(void) {
                 if (!entrada_terminal) { //bloqueia movimento e ataque enquanto o jogador tá no terminal
                     entidade_mover_jogador(jogador, sala, dt);
 
-                    if (IsKeyPressed(KEY_SPACE) && jogador->hp > 0) { //porrada 💥💥 — custa 1 de energia
+                    if (IsKeyPressed(KEY_SPACE) && jogador->timer_ataque <= 0.0f) { //porrada 💥💥 — custa 1 de energia
                         jogador->hp--;
-                        if (jogador->hp <= 0) { //ficou sem energia = não consegue mais atacar e morre
-                            jogador->hp = 0;
-                            jogador->vivo = false;
-                            sistema_transicao(&estado, ESTADO_GAME_OVER);
-                            break;
-                        }
+                        if (jogador->hp < 0) jogador->hp = 0;
                         entidade_atacar(jogador, entidades, sala, 1, &score);
                     }
                 }
@@ -408,7 +403,7 @@ int main(void) {
                     ClearBackground(DARKGRAY);
                     sala_desenhar(sala, cameraX, cameraY, TAMANHO_TILE, CAMERA_LARGURA, CAMERA_ALTURA);
                     lista_desenhar(entidades, sala, cameraX, cameraY, TAMANHO_TILE);
-                    hud_desenhar(score, jogador->oxigenio, jogador->hp, fase.digitos_coletados); //barras separadas: oxigênio e energia
+                    hud_desenhar(score, jogador->oxigenio, jogador->hp, fase.digitos_coletados, fase.codigo_autodestruicao); //barras separadas: oxigênio e energia
 
                     // mensagem temporária de fragmento coletado (aparece no centro da tela por cima)
                     if (timer_msg_frag > 0.0f) {
