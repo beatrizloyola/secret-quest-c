@@ -66,10 +66,9 @@ void menu_desenhar(void) {
     int altura_tela = GetScreenHeight();
     float tempo = (float)GetTime();
 
-    // Background do menu
     sistema_desenhar_background();
 
-    // Configurações de layout
+    // Configuração layout
     const char* titulo = "SECRET QUEST";
     int titulo_fonte = 64;
     int opcao_fonte = 26;
@@ -79,19 +78,17 @@ void menu_desenhar(void) {
     int esp_opcoes = 50;
     int esp_opcoes_instr = 50;
 
-    // Medidas para centralização vertical
+    // Calculos para centralização no y
     int titulo_altura = titulo_fonte;
     int opcoes_altura_total = (num_opcoes * opcao_fonte) + ((num_opcoes - 1) * esp_opcoes);
     int instr_altura = instr_fonte;
     int altura_total = titulo_altura + esp_titulo_linha + 2 + esp_linha_opcoes + opcoes_altura_total + esp_opcoes_instr + instr_altura;
     int inicio_y = (altura_tela - altura_total) / 2;
 
-    // Título com sombreamento em camadas
+    // Titulo com sombra
     int titulo_largura = MeasureText(titulo, titulo_fonte);
     int titulo_x = (largura_tela - titulo_largura) / 2;
     int titulo_y = inicio_y;
-
-    // Sombra espalhada em camadas (mais visível)
     Color sombra1 = (Color){ 0, 20, 60, 120 };
     Color sombra2 = (Color){ 0, 50, 100, 160 };
     Color sombra3 = (Color){ 0, 80, 140, 200 };
@@ -101,10 +98,9 @@ void menu_desenhar(void) {
     DrawText(titulo, titulo_x + 4, titulo_y + 4, titulo_fonte, sombra3);
     DrawText(titulo, titulo_x + 2, titulo_y + 2, titulo_fonte, sombra4);
 
-    // Título principal
     DrawText(titulo, titulo_x, titulo_y, titulo_fonte, (Color){ 0, 230, 255, 255 });
 
-    // Linha divisória entre título e opções
+    // Divisão título e opções
     int linha_y = titulo_y + titulo_altura + esp_titulo_linha;
     int linha_largura = titulo_largura + 60;
     int linha_x = (largura_tela - linha_largura) / 2;
@@ -122,12 +118,12 @@ void menu_desenhar(void) {
         int opcao_y = opcoes_inicio_y + i * (opcao_fonte + esp_opcoes);
 
         if (i == opcao_selecionada) {
-            // Indicador: seta pulsante à esquerda
+            // Indicador
             float pulso = sinf(tempo * 5.0f) * 4.0f;
             const char* seta = ">";
             DrawText(seta, (int)(opcao_x - 25 - pulso), opcao_y, opcao_fonte, (Color){ 0, 230, 255, 255 });
 
-            // Texto selecionado com sombra sutil
+            // Opção selecionada
             DrawText(opcoes[i], opcao_x + 1, opcao_y + 1, opcao_fonte, (Color){ 150, 130, 20, 180 });
             DrawText(opcoes[i], opcao_x, opcao_y, opcao_fonte, cor_selecionada);
         } else {
@@ -135,14 +131,14 @@ void menu_desenhar(void) {
         }
     }
 
-    // Linha divisória entre opções e instruções
+    // Divisão opções e instruções
     int linha2_y = opcoes_inicio_y + opcoes_altura_total + (esp_opcoes_instr / 2);
     int linha2_largura = linha_largura;
     int linha2_x = linha_x;
     DrawLine(linha2_x, linha2_y, linha2_x + linha2_largura, linha2_y, (Color){ 255, 255, 255, 180 });
     DrawLine(linha2_x, linha2_y + 1, linha2_x + linha2_largura, linha2_y + 1, (Color){ 200, 200, 200, 120 });
 
-    // Instruções centralizadas na base
+    // Instruções centralizadas
     const char* instrucoes = "CIMA / BAIXO para navegar. ENTER para confirmar";
     int instr_largura = MeasureText(instrucoes, instr_fonte);
     int instr_x = (largura_tela - instr_largura) / 2;
