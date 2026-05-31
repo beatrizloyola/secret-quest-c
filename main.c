@@ -274,18 +274,15 @@ int main(void) {
                     }
                 }
 
-                // diminuição de oxigênio ao longo do tempo
+                // oxigênio drena com o tempo; energia só é afetada por inimigos
                 timer_oxigenio += dt;
                 if (timer_oxigenio >= 10.0f) {
-                    if (jogador->hp > 0) {
-                        jogador->hp -= 1;
-                    }
                     timer_oxigenio = 0.0f;
-    
-                    if (jogador->hp <= 0) {
-                        jogador->hp = 0;
+                    jogador->oxigenio--;
+                    if (jogador->oxigenio <= 0) {
+                        jogador->oxigenio = 0;
                         jogador->vivo = false;
-                        sistema_transicao(&estado, ESTADO_GAME_OVER);
+                        sistema_transicao(&estado, ESTADO_GAME_OVER); //sufocou
                     }
                 }
 
@@ -371,7 +368,8 @@ int main(void) {
                     if (proxima) {
                         Sala* nova = sala_obter(proxima);
                         if (nova) {
-                            int hp_anterior = jogador->hp; //guarda a vida antes de destruir a lista da sala antiga
+                            int hp_anterior  = jogador->hp;       //guarda energia e oxigênio antes de destruir a lista
+                            int o2_anterior  = jogador->oxigenio;
 
                             if (entidades) { //limpa as entidades da sala q vai ser descarregada pra n quebrar a rebimboca da parafuseta, mesmo comentario se aplica pra todas as vezes q isso aparecer
                                 lista_limpar(entidades);
@@ -381,7 +379,8 @@ int main(void) {
                             entidades = lista_criar(); //cria novas entidades na sala nova
                             lista_spawnar_sala(entidades, sala, &jogador, &fase);
 
-                            jogador->hp = hp_anterior; //mantém a vida do jogador ao trocar de sala
+                            jogador->hp       = hp_anterior; //mantém energia ao trocar de sala
+                            jogador->oxigenio = o2_anterior; //mantém oxigênio ao trocar de sala
                             posicionar_jogador_apos_porta(sala, jogador, dir); //evita q o bichinho apareça dentro da parede
                         }
                     }
@@ -402,7 +401,7 @@ int main(void) {
                     ClearBackground(DARKGRAY);
                     sala_desenhar(sala, cameraX, cameraY, TAMANHO_TILE, CAMERA_LARGURA, CAMERA_ALTURA);
                     lista_desenhar(entidades, sala, cameraX, cameraY, TAMANHO_TILE);
-                    hud_desenhar(score, jogador->hp);
+                    hud_desenhar(score, jogador->oxigenio, jogador->hp); //barras separadas: oxigênio e energia
 
                     // mostra quantos fragmentos foram coletados no canto da tela
                     int frags = 0;
@@ -438,9 +437,9 @@ int main(void) {
                 BeginDrawing();
                 tela_pause_desenhar(
                     sala ? sala->arquivo : NULL,
-                    jogador ? jogador->hp : 0, // placeholder energia
+                    jogador ? jogador->hp       : 0, //energia (dano de combate)
                     score,
-                    jogador ? jogador->hp : 0  // oxigênio real
+                    jogador ? jogador->oxigenio : 0  //oxigênio (drena com tempo)
                 );
                 EndDrawing();
                 break;

@@ -343,10 +343,12 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
     entidade->next = NULL;
 
     if (tipo == ENT_JOGADOR) {      //se o tipo for jogador:
-        entidade->max_hp = 15;
-        entidade->hp = 15;
-        entidade->ataque = 3;
-        entidade->velocidade = 4.0f;
+        entidade->max_hp      = 15;
+        entidade->hp          = 15;
+        entidade->max_oxigenio = 15;
+        entidade->oxigenio     = 15;
+        entidade->ataque      = 3;
+        entidade->velocidade  = 4.0f;
     }
     else if (tipo == ENT_INIMIGO) { //se nao, se o tipo for inimigo:
         entidade->max_hp = 3;
@@ -679,11 +681,13 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
 
                 if (atual->ataque == 0) { //item normal do mapa: só score
                     if (score != NULL) *score += 250;
-                } else { //drop de inimigo (1=oxigênio, 2=energia): restaura HP e dá score menor
-                    if (jogador->hp < jogador->max_hp) {
-                        jogador->hp += 3; //cura 3 de HP
-                        if (jogador->hp > jogador->max_hp) jogador->hp = jogador->max_hp;
-                    }
+                } else if (atual->ataque == 1) { //drop oxigênio: restaura tanque de oxigênio
+                    jogador->oxigenio += 3;
+                    if (jogador->oxigenio > jogador->max_oxigenio) jogador->oxigenio = jogador->max_oxigenio;
+                    if (score != NULL) *score += 50;
+                } else { //drop energia: restaura HP de combate
+                    jogador->hp += 3;
+                    if (jogador->hp > jogador->max_hp) jogador->hp = jogador->max_hp;
                     if (score != NULL) *score += 50;
                 }
 
@@ -733,8 +737,8 @@ void lista_desenhar(ListaEntidades* lista, Sala* sala, int cam_x, int cam_y, int
         }
         else if (atual->tipo == ENT_ITEM) {
             if (atual->ataque == 1) cor = SKYBLUE; //drop oxigênio: azul claro
-            else if (atual->ataque == 2) cor = LIME;    //drop energia: verde limão
-            else cor = GREEN;                            //item normal do mapa: verde
+            else if (atual->ataque == 2) cor = LIME;    //drop energia: verde limão (igual à barra)
+            else cor = PURPLE;                           //item normal do mapa: roxo
         }
         else if (atual->tipo == ENT_FRAGMENTO) {
             cor = ORANGE; //fragmento do código aparece laranja pra se destacar do item verde

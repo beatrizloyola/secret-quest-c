@@ -393,12 +393,10 @@ void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado) {
 }
 
 // HUD
-void hud_desenhar(int score, int hp) {
+void hud_desenhar(int score, int oxigenio, int energia) {
     // Config
     int altura_hud  = 140;
     int y_hud       = GetScreenHeight() - altura_hud;
-    int energia     = hp;
-
     DrawTexture(backHUD, 0, y_hud, GRAY);
 
     // Score
@@ -425,8 +423,8 @@ void hud_desenhar(int score, int hp) {
     DrawRectangle(cx, cy + 3, 3, ch - 6, WHITE);
     DrawRectangle(cx + cw - 3, cy + 3, 3, ch - 6, WHITE);
 
-    // Preenchimento barra
-    float proporcao = (float)hp / 15.0f;
+    // Preenchimento barra de oxigênio
+    float proporcao = (float)oxigenio / 15.0f;
     if (proporcao < 0.0f) proporcao = 0.0f;
     if (proporcao > 1.0f) proporcao = 1.0f;
 
@@ -438,9 +436,9 @@ void hud_desenhar(int score, int hp) {
 
     // Mudança de cor de oxigênio
     Color cor;
-    if (hp >= 11)       cor = (Color){ 0, 200, 255, 255 };
-    else if (hp >= 6)  cor = (Color){ 0, 150, 200, 255 };
-    else                     cor = (Color){ 0, 80, 120, 255 };
+    if (oxigenio >= 11)      cor = (Color){ 0, 200, 255, 255 };
+    else if (oxigenio >= 6)  cor = (Color){ 0, 150, 200, 255 };
+    else                     cor = (Color){ 0, 80,  120, 255 };
 
     // preenchimento barra de oxigenio
     if (preenchimento_w > 0) {

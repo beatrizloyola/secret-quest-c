@@ -64,8 +64,10 @@ typedef struct Entidade {
     float x; //posição real/fracionada em tiles no eixo x, usada pra movimento fluido
     float y; //posição real/fracionada em tiles no eixo y, usada pra movimento fluido
     float velocidade; //velocidade da entidade em tiles por segundo
-    int hp; //quanto de hp tem agr
-    int max_hp; //quanto de hp maximo tem
+    int hp; //energia: quanto de hp tem agora (reduzido por inimigos)
+    int max_hp; //energia máxima
+    int oxigenio; //oxigênio: reduzido pelo timer de tempo; chegar a 0 = game over
+    int max_oxigenio; //oxigênio máximo
     int ataque; //quanto de dano dá
     Direcao direcao; //saber a direção
     bool vivo;
