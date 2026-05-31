@@ -47,5 +47,6 @@ void sistema_desenhar_background(void);
 void sistema_desenhar_background_gameover(void);
 
 Texture2D sistema_get_player_texture(Direcao direcao);
+Texture2D sistema_get_enemy_texture(int sprite_idx);
 
 #endif

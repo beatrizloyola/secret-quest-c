@@ -17,6 +17,7 @@ static Texture2D texPlayerUp;
 static Texture2D texPlayerDown;
 static Texture2D texPlayerLeft;
 static Texture2D texPlayerRight;
+static Texture2D texEnemy[5];
 
 void sistema_carregar_assets(void) {
     background = LoadTexture("assets/background.png");
@@ -26,7 +27,12 @@ void sistema_carregar_assets(void) {
     texPlayerDown  = LoadTexture("assets/player_down.png");
     texPlayerLeft  = LoadTexture("assets/player_left.png");
     texPlayerRight = LoadTexture("assets/player_right.png");
-
+    // Dar load em cada textura para seu respectivo indice
+    texEnemy[0] = LoadTexture("assets/enemy_0.png");
+    texEnemy[1] = LoadTexture("assets/enemy_1.png");
+    texEnemy[2] = LoadTexture("assets/enemy_2.png");
+    texEnemy[3] = LoadTexture("assets/enemy_3.png");
+    texEnemy[4] = LoadTexture("assets/enemy_4.png");
 }
 
 void sistema_descarregar_assets(void) {
@@ -37,6 +43,10 @@ void sistema_descarregar_assets(void) {
     UnloadTexture(texPlayerDown);
     UnloadTexture(texPlayerLeft);
     UnloadTexture(texPlayerRight);
+    // Pode usar for para fazer unload
+    for (int i = 0; i < 5; i++) {
+        UnloadTexture(texEnemy[i]);
+    }
 }
 
 // Movimentação player
@@ -48,6 +58,14 @@ Texture2D sistema_get_player_texture(Direcao direcao) {
         case DIR_DIREITA:  return texPlayerRight;
     }
     return texPlayerDown;
+}
+
+// Assets inimigos
+Texture2D sistema_get_enemy_texture(int sprite_idx) {
+    if (sprite_idx >= 0 && sprite_idx < 5) {
+        return texEnemy[sprite_idx];
+    }
+    return texEnemy[0];
 }
 
 // Tela background
