@@ -341,6 +341,7 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
     entidade->debug_ataque_direcao = DIR_BAIXO; //o ataque usa a direção atual da entidade
     entidade->ataque_ja_acertou = false; //evita dar dano várias vezes no mesmo golpe de espada
 
+    entidade->sprite_idx = -1;
     entidade->next = NULL;
 
     if (tipo == ENT_JOGADOR) {      //se o tipo for jogador:
@@ -453,6 +454,7 @@ void lista_spawnar_sala(ListaEntidades* lista, Sala* sala, Entidade** jogador, F
         if (sala->inimigos_mortos[i]) continue;
         Entidade* inimigo = entidade_criar(ENT_INIMIGO, sala->spawn_inimigos[i].x, sala->spawn_inimigos[i].y);
         inimigo->spawn_idx = i;
+        inimigo->sprite_idx = GetRandomValue(0, 4); // Indice aleatório para asset (sistema)
         lista_adicionar(lista, inimigo);
     }
 
@@ -752,6 +754,10 @@ void lista_desenhar(ListaEntidades* lista, Sala* sala, int cam_x, int cam_y, int
         if (atual->tipo == ENT_JOGADOR) {
             Texture2D tex = sistema_get_player_texture(atual->direcao);
             float scale = tamanho_entidade / (float)tex.width; // 51.2 / 64 = 0.8
+            DrawTextureEx(tex, (Vector2){tela_x, tela_y}, 0.0f, scale, WHITE);
+        } else if (atual->tipo == ENT_INIMIGO) {
+            Texture2D tex = sistema_get_enemy_texture(atual->sprite_idx);
+            float scale = tamanho_entidade / (float)tex.width;
             DrawTextureEx(tex, (Vector2){tela_x, tela_y}, 0.0f, scale, WHITE);
         } else {
             DrawRectangle((int)tela_x, (int)tela_y, (int)tamanho_entidade, (int)tamanho_entidade, cor);
