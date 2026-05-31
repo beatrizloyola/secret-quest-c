@@ -356,7 +356,13 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
         entidade->velocidade = 2.5f;
         entidade->timer_mudar_direcao = GetRandomValue(45, 110) / 100.0f;
     }
-    else {                          //se nao, o tipo é item:
+    else if (tipo == ENT_ITEM) {    //se nao, o tipo é item:
+        entidade->max_hp = 1;
+        entidade->hp = 1;
+        entidade->ataque = 0;
+        entidade->velocidade = 0.0f;
+    }
+    else {                          //se nao, é um fragmento do código de autodestruição
         entidade->max_hp = 1;
         entidade->hp = 1;
         entidade->ataque = 0;
@@ -427,7 +433,7 @@ void lista_limpar(ListaEntidades* lista) { //apaga a lista e libera o espaço al
     free(lista);
 }
 
-void lista_spawnar_sala(ListaEntidades* lista, Sala* sala, Entidade** jogador) { //cria as entidades usando os spawns que o mapa leu do .txt
+void lista_spawnar_sala(ListaEntidades* lista, Sala* sala, Entidade** jogador, Fase* fase) { //cria as entidades usando os spawns que o mapa leu do .txt
     if (lista == NULL || sala == NULL) { //mortamdela :O
         return;
     }
@@ -449,7 +455,16 @@ void lista_spawnar_sala(ListaEntidades* lista, Sala* sala, Entidade** jogador) {
 
     for (int i = 0; i < sala->num_itens; i++) { //cada I no .txt vira um item
         Entidade* item = entidade_criar(ENT_ITEM, sala->spawn_itens[i].x, sala->spawn_itens[i].y);
+        item->spawn_idx = -1;
         lista_adicionar(lista, item);
+    }
+
+    for (int i = 0; i < sala->num_fragmentos; i++) { //cada a/b/c/d no .txt vira um fragmento; pula se o jogador já coletou
+        int id = sala->fragmento_ids[i];
+        if (fase != NULL && ((fase->digitos_coletados >> id) & 1)) continue; //já foi pego, não reaparece
+        Entidade* frag = entidade_criar(ENT_FRAGMENTO, sala->spawn_fragmentos[i].x, sala->spawn_fragmentos[i].y);
+        frag->spawn_idx = id; //reutiliza spawn_idx pra guardar qual fragmento é (0-3)
+        lista_adicionar(lista, frag);
     }
 }
 
@@ -554,7 +569,7 @@ void entidade_atacar(Entidade* atacante, ListaEntidades* alvos, Sala* sala, int 
     aplicar_dano_ataque(atacante, alvos, sala, score); //tenta acertar imediatamente ao apertar espaço
 }
 
-void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float dt, int* score, EstadoJogo* estado) { //atualiza cooldown, IA inimiga, dano por contato e coleta de item
+void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float dt, int* score, EstadoJogo* estado, Fase* fase) { //atualiza cooldown, IA inimiga, dano por contato, coleta de item e coleta de fragmento
     if (lista == NULL || sala == NULL || jogador == NULL) { //inhame (acabarm as ideias) :l
         return;
     }
@@ -655,6 +670,21 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
                 lista_remover(lista, atual);
             }
         }
+        else if (atual->tipo == ENT_FRAGMENTO && atual->vivo) {
+            if (entidades_encostando(atual, jogador)) { //jogador encostou no fragmento do código
+                atual->vivo = false;
+
+                if (fase != NULL) {
+                    fase->digitos_coletados |= (1 << atual->spawn_idx); //marca o bit do fragmento como coletado
+                }
+
+                if (score != NULL) {
+                    *score += 500; //fragmento vale mais que item normal pq é parte da missão
+                }
+
+                lista_remover(lista, atual);
+            }
+        }
 
         atual = proximo;
     }
@@ -682,6 +712,9 @@ void lista_desenhar(ListaEntidades* lista, Sala* sala, int cam_x, int cam_y, int
         }
         else if (atual->tipo == ENT_ITEM) {
             cor = GREEN;
+        }
+        else if (atual->tipo == ENT_FRAGMENTO) {
+            cor = ORANGE; //fragmento do código aparece laranja pra se destacar do item verde
         }
 
         float tamanho_entidade = entidade_raio(atual) * 2.0f * tamanho_tile;
