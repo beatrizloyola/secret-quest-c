@@ -7,6 +7,6 @@ N:mapa/salas/sala11.txt S: L:mapa/salas/sala16.txt O:mapa/salas/sala14.txt
 D..........D
 D..........D
 ##........##
-##........##
+##...d....##
 ##........##
 ############
