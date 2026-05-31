@@ -22,7 +22,7 @@ void tela_gameover_desenhar(int score, const char* nome_input);
 
 // Tela de vitória
 void tela_vitoria_atualizar(EstadoJogo* estado);
-void tela_vitoria_desenhar(int score);
+void tela_vitoria_desenhar(int score, const char* nome_input);
 
 // Mudança de telas
 void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado);

@@ -407,7 +407,7 @@ int main(void) {
                     // mostra quantos fragmentos foram coletados no canto da tela
                     int frags = 0;
                     for (int i = 0; i < 4; i++) if ((fase.digitos_coletados >> i) & 1) frags++;
-                    DrawText(TextFormat("Fragmentos: %d/4", frags), 8, 8, 18, frags == 4 ? ORANGE : LIGHTGRAY);
+                    DrawText(TextFormat("Fragmentos: %d/4", frags), 8, 8, 18, frags == 4 ? ORANGE : BLACK);
 
                     // mensagem temporária de fragmento coletado
                     if (timer_msg_frag > 0.0f) {
@@ -487,8 +487,22 @@ int main(void) {
             }
                 
             case ESTADO_VITORIA: {
-                tela_vitoria_atualizar(&estado);
-                if (estado == ESTADO_MENU) { //voltou pro menu: limpa tudo igual ao game over
+                int cv = GetCharPressed();
+                while (cv > 0) {
+                    if (cv >= 32 && cv < 127 && nome_input_len < 15) {
+                        nome_input[nome_input_len++] = (char)cv;
+                        nome_input[nome_input_len] = '\0';
+                    }
+                    cv = GetCharPressed();
+                }
+                if (IsKeyPressed(KEY_BACKSPACE) && nome_input_len > 0) {
+                    nome_input[--nome_input_len] = '\0';
+                }
+
+                if (IsKeyPressed(KEY_ENTER) && nome_input_len > 0) {
+                    ranking_adicionar(ranking, &ranking_count, nome_input, score);
+                    ranking_salvar(ranking, ranking_count);
+
                     if (entidades) {
                         lista_limpar(entidades);
                         entidades = NULL;
@@ -497,9 +511,11 @@ int main(void) {
                     sala = NULL;
                     jogador = NULL;
                     bloquear_enter_menu = true;
+                    sistema_transicao(&estado, ESTADO_MENU);
                 }
+
                 BeginDrawing();
-                tela_vitoria_desenhar(score);
+                tela_vitoria_desenhar(score, nome_input);
                 EndDrawing();
                 break;
             }

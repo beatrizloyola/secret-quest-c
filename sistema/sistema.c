@@ -340,7 +340,7 @@ void tela_vitoria_atualizar(EstadoJogo* estado) {
     }
 }
 
-void tela_vitoria_desenhar(int score) {
+void tela_vitoria_desenhar(int score, const char* nome_input) {
     int largura_tela = GetScreenWidth();
     int altura_tela  = GetScreenHeight();
     float tempo = (float)GetTime();
@@ -381,10 +381,10 @@ void tela_vitoria_desenhar(int score) {
     int score_largura = MeasureText(buf, 28);
     DrawText(buf, (largura_tela - score_largura) / 2, linha_y + 24, 28, WHITE);
 
-    // instrução pro menu
-    const char* instrucao = "Pressione ENTER para voltar ao menu";
-    int instr_largura = MeasureText(instrucao, 18);
-    DrawText(instrucao, (largura_tela - instr_largura) / 2, linha_y + 80, 18, (Color){ 200, 200, 200, 200 });
+    // campo de nome pra salvar no ranking
+    DrawText("Digite seu nome:", linha_x, linha_y + 80, 20, GRAY);
+    DrawText(nome_input, linha_x, linha_y + 108, 28, YELLOW);
+    DrawText("ENTER para confirmar", linha_x, linha_y + 152, 16, (Color){ 200, 200, 200, 200 });
 }
 
 // Mudança de Telas
