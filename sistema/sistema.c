@@ -333,6 +333,60 @@ void tela_gameover_desenhar(int score, const char* nome_input) {
     DrawText("ENTER para confirmar", linha_x, linha_y + 148, 16, (Color){ 200, 200, 200, 200 });
 }
 
+// Tela de Vitória
+void tela_vitoria_atualizar(EstadoJogo* estado) {
+    if (IsKeyPressed(KEY_ENTER)) { //ENTER volta pro menu depois de vencer
+        sistema_transicao(estado, ESTADO_MENU);
+    }
+}
+
+void tela_vitoria_desenhar(int score) {
+    int largura_tela = GetScreenWidth();
+    int altura_tela  = GetScreenHeight();
+    float tempo = (float)GetTime();
+
+    sistema_desenhar_background();
+
+    const char* titulo = "MISSÃO CONCLUÍDA";
+    int titulo_fonte = 60;
+
+    int titulo_largura = MeasureText(titulo, titulo_fonte);
+    int titulo_x = (largura_tela - titulo_largura) / 2;
+    int titulo_y = (altura_tela / 2) - 200;
+
+    // sombra em camadas igual ao resto do jogo
+    Color sombra1 = (Color){ 0,  40,  0, 120 };
+    Color sombra2 = (Color){ 0,  80,  0, 160 };
+    Color sombra3 = (Color){ 0, 120,  0, 200 };
+    Color sombra4 = (Color){ 0, 160,  0, 240 };
+    DrawText(titulo, titulo_x + 8, titulo_y + 8, titulo_fonte, sombra1);
+    DrawText(titulo, titulo_x + 6, titulo_y + 6, titulo_fonte, sombra2);
+    DrawText(titulo, titulo_x + 4, titulo_y + 4, titulo_fonte, sombra3);
+    DrawText(titulo, titulo_x + 2, titulo_y + 2, titulo_fonte, sombra4);
+
+    // texto principal pisca pra celebrar :D YIPEE
+    int alpha = (int)(200.0f + 55.0f * sinf(tempo * 2.5f));
+    if (alpha > 255) alpha = 255;
+    DrawText(titulo, titulo_x, titulo_y, titulo_fonte, (Color){ 50, 255, 50, (unsigned char)alpha });
+
+    // linha divisória
+    int linha_y = titulo_y + titulo_fonte + 20;
+    int linha_largura = titulo_largura + 40;
+    int linha_x = (largura_tela - linha_largura) / 2;
+    DrawLine(linha_x, linha_y, linha_x + linha_largura, linha_y, (Color){ 255, 255, 255, 180 });
+
+    // pontuação final centralizada
+    char buf[64];
+    snprintf(buf, sizeof(buf), "Pontuação final: %d", score);
+    int score_largura = MeasureText(buf, 28);
+    DrawText(buf, (largura_tela - score_largura) / 2, linha_y + 24, 28, WHITE);
+
+    // instrução pro menu
+    const char* instrucao = "Pressione ENTER para voltar ao menu";
+    int instr_largura = MeasureText(instrucao, 18);
+    DrawText(instrucao, (largura_tela - instr_largura) / 2, linha_y + 80, 18, (Color){ 200, 200, 200, 200 });
+}
+
 // Mudança de Telas
 void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado) {
     *estado_atual = novo_estado;
