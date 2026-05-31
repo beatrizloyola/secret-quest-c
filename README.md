@@ -6,14 +6,17 @@ Jogo de exploração top-down em C com raylib, baseado em Secret Quest (Atari, 1
 
 ## Sobre
 
-O jogador explora uma estação espacial com 16 salas interligadas, enfrenta inimigos alienígenas e coleta o Código da Bomba para completar a missão. O progresso é salvo e os melhores scores ficam no ranking.
+O jogador explora uma estação espacial com 16 salas interligadas, enfrenta inimigos alienígenas e coleta 4 fragmentos do código de autodestruição. Com o código completo, ativa o terminal e precisa escapar pela saída antes que a estação exploda.
 
 ## Funcionalidades
 
 - Mapa com 16 salas navegáveis, cada uma em arquivo `.txt`
-- Inimigos com patrulha e combate corpo a corpo
-- Item colecionável (Código da Bomba)
-- Sistema de save/load (sala atual, vida, score)
+- Inimigos com patrulha, perseguição e combate corpo a corpo
+- 4 fragmentos de código espalhados pelo mapa
+- Terminal de autodestruição com código de 4 dígitos
+- Contagem regressiva de 20s após ativar o terminal
+- Dois recursos independentes: **energia** (gasta ao atacar) e **oxigênio** (drena com tempo e dano de inimigo)
+- Drops de oxigênio e energia ao matar inimigos
 - Ranking com top 5 scores persistido em arquivo binário
 - Menus: Iniciar, Ranking, Sair
 
@@ -22,8 +25,9 @@ O jogador explora uma estação espacial com 16 salas interligadas, enfrenta ini
 | Tecla | Ação |
 |---|---|
 | ← ↑ → ↓ | Mover |
-| `SPACE` | Atacar |
-| `ESC` | Pausar |
+| `SPACE` | Atacar (custa 1 de energia) |
+| `ENTER` | Interagir com terminal |
+| `ESC` | Pausar / cancelar terminal |
 
 ## Como compilar
 
@@ -51,11 +55,14 @@ mapa/
         sala1.txt ... sala16.txt
 entidade/
     entidade.c / entidade.h
-sistema.c / sistema.h
+sistema/
+    sistema.c / sistema.h
 assets/
-    sprites.png
+    background.png
+    backHUD.png
+    backOVER.png
+    player_up/down/left/right.png
 highscores.dat
-savegame.dat
 Makefile
 ```
 
@@ -84,8 +91,11 @@ N:mapa/salas/salaX.txt S: L:mapa/salas/salaY.txt O:
 | `.` | Chão |
 | `S` | Spawn do jogador |
 | `E` | Spawn de inimigo |
-| `I` | Item |
+| `I` | Item (score) |
 | `D` | Porta |
+| `a` `b` `c` `d` | Fragmentos do código (0–3) |
+| `T` | Terminal de autodestruição |
+| `X` | Saída da estação |
 
 A primeira linha define o tamanho da sala. A segunda linha define as saídas em cada direção (N/S/L/O).
 
@@ -96,12 +106,12 @@ A primeira linha define o tamanho da sala. A segunda linha define as saídas em 
 - Alocação dinâmica (`malloc`/`free`)
 - Lista encadeada (entidades)
 - Matriz dinâmica 2D (grid da sala)
-- Leitura/escrita em arquivo texto e binário (mapa e save)
+- Leitura e escrita em arquivo binário (ranking)
 
 ## Equipe
 
 | Dev | Módulo |
 |---|---|
 | Beatriz Loyola | `mapa.c` — parser, colisão, renderização, transição de salas |
-| Daniel Donaire | `entidade.c` — lista encadeada, combate |
-| Pedro Bedor | `sistema.c` — menus, HUD, save/load, ranking |
+| Daniel Donaire | `entidade.c` — lista encadeada, combate, IA |
+| Pedro Bedor | `sistema.c` — menus, HUD, ranking |
