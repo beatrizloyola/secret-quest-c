@@ -1,4 +1,5 @@
 #include "mapa.h"
+#include "../sistema/sistema.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -130,15 +131,41 @@ void sala_desenhar(Sala* s, int cam_x, int cam_y, int tamanho_tile, int cam_larg
             int mx = cam_x + x;
             if (mx >= s->largura || my >= s->altura) continue;
 
-            Color cor;
-            switch (s->grid[my][mx].tipo) { // cada tipo de tile tem sua cor
-                case TILE_PAREDE:   cor = YELLOW;   break;
-                case TILE_PORTA:    cor = BLACK;    break;
-                case TILE_TERMINAL: cor = SKYBLUE;  break; // terminal brilha azul
-                case TILE_SAIDA:    cor = MAGENTA;  break; // saída brilha rosa
-                default:            cor = BLACK;    break; // chão é preto
+            int px = x * tamanho_tile;
+            int py = y * tamanho_tile;
+
+            switch (s->grid[my][mx].tipo) {
+                case TILE_PAREDE: {
+                    Texture2D tex = sistema_get_parede_texture();
+                    float escala = (float)tamanho_tile / tex.width;
+                    DrawTextureEx(tex, (Vector2){px, py}, 0.0f, escala, WHITE);
+                    break;
+                }
+                case TILE_PORTA: {
+                    Texture2D tex = sistema_get_chao_texture();
+                    float escala = (float)tamanho_tile / tex.width;
+                    DrawTextureEx(tex, (Vector2){px, py}, 0.0f, escala, WHITE);
+                    break;
+                }
+                case TILE_TERMINAL: {
+                    Texture2D tex = sistema_get_terminal_texture();
+                    float escala = (float)tamanho_tile / tex.width;
+                    DrawTextureEx(tex, (Vector2){px, py}, 0.0f, escala, WHITE);
+                    break;
+                }
+                case TILE_SAIDA: {
+                    Texture2D tex = sistema_get_saida_texture();
+                    float escala = (float)tamanho_tile / tex.width;
+                    DrawTextureEx(tex, (Vector2){px, py}, 0.0f, escala, WHITE);
+                    break;
+                }
+                default: { // TILE_CHAO
+                    Texture2D tex = sistema_get_chao_texture();
+                    float escala = (float)tamanho_tile / tex.width;
+                    DrawTextureEx(tex, (Vector2){px, py}, 0.0f, escala, WHITE);
+                    break;
+                }
             }
-            DrawRectangle(x * tamanho_tile, y * tamanho_tile, tamanho_tile, tamanho_tile, cor);
         }
     }
 }

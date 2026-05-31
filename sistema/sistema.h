@@ -11,7 +11,7 @@ void menu_desenhar(void);
 
 // Tela de pause
 void tela_pause_atualizar(EstadoJogo* estado);
-void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio);
+void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio, int digitos_coletados);
 
 // Tela de ranking
 void tela_ranking_atualizar(EstadoJogo* estado);
@@ -28,7 +28,7 @@ void tela_vitoria_desenhar(int score, const char* nome_input);
 void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado);
 
 // HUD
-void hud_desenhar(int score, int oxigenio, int energia);
+void hud_desenhar(int score, int oxigenio, int energia, int digitos_coletados);
 
 // Sistema Ranking
 void ranking_carregar(Recorde* lista, int max);
@@ -49,5 +49,13 @@ void sistema_desenhar_background_gameover(void);
 Texture2D sistema_get_player_texture(Direcao direcao);
 Texture2D sistema_get_enemy_texture(int sprite_idx);
 Texture2D sistema_get_ataque_texture(int frame);
+Texture2D sistema_get_chao_texture(void);
+Texture2D sistema_get_parede_texture(void);
+Texture2D sistema_get_moeda_texture(void);
+Texture2D sistema_get_pilha_texture(void);
+Texture2D sistema_get_oxigenio_item_texture(void);
+Texture2D sistema_get_terminal_texture(void);
+Texture2D sistema_get_saida_texture(void);
+Texture2D sistema_get_fragmento_texture(void);
 
 #endif

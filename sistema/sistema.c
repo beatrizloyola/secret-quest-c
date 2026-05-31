@@ -19,6 +19,14 @@ static Texture2D texPlayerLeft;
 static Texture2D texPlayerRight;
 static Texture2D texEnemy[5];
 static Texture2D texAtaque[5];
+static Texture2D texChao;
+static Texture2D texParede;
+static Texture2D texMoeda;
+static Texture2D texPilha;
+static Texture2D texOxigenioItem;
+static Texture2D texTerminal;
+static Texture2D texSaida;
+static Texture2D texFragmento;
 
 void sistema_carregar_assets(void) {
     background = LoadTexture("assets/background.png");
@@ -40,6 +48,14 @@ void sistema_carregar_assets(void) {
     texAtaque[2] = LoadTexture("assets/ataque/SFX301_03.png");
     texAtaque[3] = LoadTexture("assets/ataque/SFX301_04.png");
     texAtaque[4] = LoadTexture("assets/ataque/SFX301_05.png");
+    texChao   = LoadTexture("assets/chao.png");
+    texParede = LoadTexture("assets/parede.png");
+    texMoeda        = LoadTexture("assets/moeda.png");
+    texPilha        = LoadTexture("assets/pilha.png");
+    texOxigenioItem = LoadTexture("assets/oxigenio.png");
+    texTerminal     = LoadTexture("assets/terminal.png");
+    texSaida        = LoadTexture("assets/saida.png");
+    texFragmento    = LoadTexture("assets/fragmento.png");
 }
 
 void sistema_descarregar_assets(void) {
@@ -58,6 +74,14 @@ void sistema_descarregar_assets(void) {
     for (int i = 0; i < 5; i++) {
         UnloadTexture(texAtaque[i]);
     }
+    UnloadTexture(texChao);
+    UnloadTexture(texParede);
+    UnloadTexture(texMoeda);
+    UnloadTexture(texPilha);
+    UnloadTexture(texOxigenioItem);
+    UnloadTexture(texTerminal);
+    UnloadTexture(texSaida);
+    UnloadTexture(texFragmento);
 }
 
 // Movimentação player
@@ -86,6 +110,16 @@ Texture2D sistema_get_ataque_texture(int frame) {
     }
     return texAtaque[0];
 }
+
+// Assets mapa
+Texture2D sistema_get_chao_texture(void)  { return texChao; }
+Texture2D sistema_get_parede_texture(void) { return texParede; }
+Texture2D sistema_get_moeda_texture(void)        { return texMoeda; }
+Texture2D sistema_get_pilha_texture(void)        { return texPilha; }
+Texture2D sistema_get_oxigenio_item_texture(void) { return texOxigenioItem; }
+Texture2D sistema_get_terminal_texture(void)     { return texTerminal; }
+Texture2D sistema_get_saida_texture(void)        { return texSaida; }
+Texture2D sistema_get_fragmento_texture(void)   { return texFragmento; }
 
 // Tela background
 void sistema_desenhar_background(void) {
@@ -212,7 +246,7 @@ void tela_pause_atualizar(EstadoJogo* estado) {
         sistema_transicao(estado, ESTADO_JOGANDO);
     }
 }
-void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio) {
+void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio, int digitos_coletados) {
     int largura_tela = GetScreenWidth();
     int altura_tela = GetScreenHeight();
 
@@ -277,6 +311,12 @@ void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio)
 
     snprintf(buffer, sizeof(buffer), "Pontuacao: %d", score);
     DrawText(buffer, info_x, info_inicio_y + 3 * info_espaco, info_fonte, WHITE);
+
+    // Fragmentos coletados
+    int frags = 0;
+    for (int i = 0; i < 4; i++) if ((digitos_coletados >> i) & 1) frags++;
+    snprintf(buffer, sizeof(buffer), "Fragmentos: %d/4", frags);
+    DrawText(buffer, info_x, info_inicio_y + 4 * info_espaco, info_fonte, frags == 4 ? ORANGE : WHITE);
 
     // Instruções embaixo do status
     const char* instrucao = "Pressione ENTER para voltar";
@@ -455,16 +495,22 @@ void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado) {
 }
 
 // HUD
-void hud_desenhar(int score, int oxigenio, int energia) {
+void hud_desenhar(int score, int oxigenio, int energia, int digitos_coletados) {
     // Config
     int altura_hud  = 140;
     int y_hud       = GetScreenHeight() - altura_hud;
     DrawTexture(backHUD, 0, y_hud, GRAY);
 
-    // Score
+    // Score (parte superior do HUD)
     char texto[128];
     snprintf(texto, sizeof(texto), "SCORE: %d", score);
-    DrawText(texto, 310, y_hud + 52, 36, WHITE);
+    DrawText(texto, 310, y_hud + 18, 36, WHITE);
+
+    // Fragmentos (parte inferior do HUD, mesma posição X que Score)
+    int frags = 0;
+    for (int i = 0; i < 4; i++) if ((digitos_coletados >> i) & 1) frags++;
+    snprintf(texto, sizeof(texto), "Fragmentos: %d/4", frags);
+    DrawText(texto, 310, y_hud + 92, 22, frags == 4 ? ORANGE : WHITE);
 
     // Cilindro oxigênio
     int cx = 580;
