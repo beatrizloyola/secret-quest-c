@@ -81,6 +81,7 @@ typedef struct Entidade {
     Direcao debug_ataque_direcao; //direção do ataque no momento em que o jogador apertou espaço
     bool ataque_ja_acertou; //evita que o mesmo golpe dê dano várias vezes
     int spawn_idx; //índice em sala->spawn_inimigos, -1 se não for inimigo
+    int sprite_idx; //índice da sprite (0-4 para inimigos, -1 se não usar)
     struct Entidade* next; //próxima entidade da lista
 } Entidade;
 
