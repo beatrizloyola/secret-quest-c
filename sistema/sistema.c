@@ -143,7 +143,7 @@ void menu_desenhar(void) {
     DrawLine(linha2_x, linha2_y + 1, linha2_x + linha2_largura, linha2_y + 1, (Color){ 200, 200, 200, 120 });
 
     // Instruções centralizadas na base
-    const char* instrucoes = "Use CIMA / BAIXO + ENTER";
+    const char* instrucoes = "Use ↑ / ↓ para navegar. Use ENTER para confirmar";
     int instr_largura = MeasureText(instrucoes, instr_fonte);
     int instr_x = (largura_tela - instr_largura) / 2;
     int instr_y = opcoes_inicio_y + opcoes_altura_total + esp_opcoes_instr;
@@ -247,40 +247,41 @@ void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado) {
 void hud_desenhar(int score, int hp) {
     // Config
     int altura_hud  = 140;
-    int largura     = GetScreenWidth();
     int y_hud       = GetScreenHeight() - altura_hud;
-    int energia     = hp;                  // placeholder
+    int energia     = hp;
 
     DrawTexture(backHUD, 0, y_hud, GRAY);
 
     // Score
     char texto[128];
     snprintf(texto, sizeof(texto), "SCORE: %d", score);
-    DrawText(texto, 310, y_hud + 45, 30, WHITE);
+    DrawText(texto, 310, y_hud + 52, 36, WHITE);
 
     // Cilindro oxigênio
+    int cx = 580;
+    int cy = y_hud + 40;
+    int cw = 160;
+    int ch = 32;
 
-    int cx = 520;
-    int cy = y_hud + 45;
-    int cw = 140;
-    int ch = 26;
-
-    // Bico na esquerda
-    int bico_w = 10;
-    int bico_h = 16;
-    int bico_x = cx - bico_w;
+    // Bico na direita
+    int bico_w = 12;
+    int bico_h = 20;
+    int bico_x = cx + cw;
     int bico_y = cy + (ch / 2) - (bico_h / 2);
-    DrawRectangle(bico_x, bico_y, bico_w, bico_h, GRAY);
+    DrawRectangle(bico_x, bico_y, bico_w, bico_h, WHITE);
 
-    // Borda
-    DrawRectangleLines(cx, cy, cw, ch, WHITE);
+    // Borda grossa (3px)
+    DrawRectangle(cx, cy, cw, 3, WHITE);
+    DrawRectangle(cx, cy + ch - 3, cw, 3, WHITE);
+    DrawRectangle(cx, cy + 3, 3, ch - 6, WHITE);
+    DrawRectangle(cx + cw - 3, cy + 3, 3, ch - 6, WHITE);
 
     // Preenchimento barra
     float proporcao = (float)hp / 15.0f;
     if (proporcao < 0.0f) proporcao = 0.0f;
     if (proporcao > 1.0f) proporcao = 1.0f;
 
-    int margem = 2;
+    int margem = 3;
     int preenchimento_w = (int)((cw - 2 * margem) * proporcao);
     int preenchimento_x = cx + margem;
     int preenchimento_y = cy + margem;
@@ -298,54 +299,55 @@ void hud_desenhar(int score, int hp) {
     }
 
     // texto "oxigênio" centralizado
-    int largura_oxg = MeasureText("Oxigênio", 16);
+    int largura_oxg = MeasureText("Oxigênio", 20);
     int o2_x = cx + (cw / 2) - (largura_oxg / 2);
-    DrawText("Oxigênio", o2_x, y_hud + 78, 16, GRAY);
+    DrawText("Oxigênio", o2_x, y_hud + 82, 20, GRAY);
 
     // Pilha | Barra de Energia
-    
-    // Pilha
-    int px = 690;           //posição horizontal pilha
-    int py = y_hud + 45;    // posição vertical pilha
-    int pw = 120;           // largura pilha
-    int ph = 24;            // altura pilha
-    
+    int px = 770;
+    int py = y_hud + 40;
+    int pw = 160;
+    int ph = 32;
+
     // Cabeça pilha
-    int cabeca_w = 6;
-    int cabeca_h = 12;
+    int cabeca_w = 12;
+    int cabeca_h = 20;
     int cabeca_x = px + pw;
     int cabeca_y = py + (ph / 2) - (cabeca_h / 2);
-    DrawRectangle(cabeca_x, cabeca_y, cabeca_w, cabeca_h, GRAY);
-    
-    // Borda da pilha
-    DrawRectangleLines(px, py, pw, ph, WHITE);
-    
+    DrawRectangle(cabeca_x, cabeca_y, cabeca_w, cabeca_h, WHITE);
+
+    // Borda grossa (3px)
+    DrawRectangle(px, py, pw, 3, WHITE);
+    DrawRectangle(px, py + ph - 3, pw, 3, WHITE);
+    DrawRectangle(px, py + 3, 3, ph - 6, WHITE);
+    DrawRectangle(px + pw - 3, py + 3, 3, ph - 6, WHITE);
+
     // Preenchimento pilha
     float proporcaoPilha = (float)energia / 15.0f;
     if (proporcaoPilha < 0.0f) proporcaoPilha = 0.0f;
     if (proporcaoPilha > 1.0f) proporcaoPilha = 1.0f;
-    
+
     int margemPilha = 3;
     int preenchimentoPilha_w = (int)((pw - 2 * margemPilha) * proporcaoPilha);
     int preenchimentoPilha_x = px + margemPilha;
     int preenchimentoPilha_y = py + margemPilha;
     int preenchimentoPilha_h = ph - 2 * margemPilha;
-    
+
     // mudança de cor de energia
     Color corPilha;
     if (energia >= 11)       corPilha = GREEN;
     else if (energia >= 6)  corPilha = YELLOW;
     else                    corPilha = RED;
-    
+
     // preenchimento da barra
     if (preenchimentoPilha_w > 0) {
         DrawRectangle(preenchimentoPilha_x, preenchimentoPilha_y, preenchimentoPilha_w, preenchimentoPilha_h, corPilha);
     }
-    
+
     // texto "energia" centralizado
-    int largura_texto = MeasureText("ENERGIA", 14);
+    int largura_texto = MeasureText("ENERGIA", 20);
     int tag_x = px + (pw / 2) - (largura_texto / 2);
-    DrawText("ENERGIA", tag_x, y_hud + 78, 14, GRAY);
+    DrawText("ENERGIA", tag_x, y_hud + 82, 20, GRAY);
 }
 
 // Sistema Ranking (placeholder)
