@@ -12,7 +12,9 @@ typedef struct {
 typedef enum {
     TILE_CHAO,
     TILE_PAREDE,
-    TILE_PORTA
+    TILE_PORTA,
+    TILE_TERMINAL, // T: terminal de autodestruição, jogador interage pra ativar a contagem
+    TILE_SAIDA     // X: saída da estação, jogador precisa chegar aqui depois de ativar o terminal
 } TileType;
 
 typedef struct {
@@ -29,6 +31,9 @@ typedef struct {
     Vec2i spawn_itens[16];
     int num_itens;
     bool inimigos_mortos[16];
+    Vec2i spawn_fragmentos[4]; // posições dos fragmentos do código nessa sala
+    int   fragmento_ids[4];    // qual dos 4 fragmentos (0-3) cada spawn corresponde
+    int   num_fragmentos;      // quantos fragmentos tem nessa sala (geralmente 0 ou 1)
     char arquivo[64];
     char saida_norte[64];
     char saida_sul[64];
@@ -41,7 +46,8 @@ typedef struct {
 typedef enum {
     ENT_JOGADOR,
     ENT_INIMIGO,
-    ENT_ITEM
+    ENT_ITEM,
+    ENT_FRAGMENTO // fragmento do código de autodestruição, coletado ao encostar
 } EntTipo;
 
 //define direção da entidade
@@ -92,6 +98,14 @@ typedef enum {
     ESTADO_GAME_OVER,   // fim do jogo (morreu)
     ESTADO_VITORIA      // fim do jogo (ganhou)
 } EstadoJogo;
+
+// Controla o objetivo principal da missão
+typedef struct {
+    int   codigo_autodestruicao; // código de 4 dígitos que o jogador precisa digitar no terminal
+    int   digitos_coletados;     // bitmask: bit N ligado = fragmento N já foi pego pelo jogador
+    int   codigo_ativado;        // vira 1 depois que o jogador digitou o código certo no terminal
+    float tempo_restante;        // segundos que sobram pra chegar na saída antes de explodir
+} Fase;
 
 // Template de Recorde
 typedef struct {
