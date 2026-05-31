@@ -542,7 +542,7 @@ static void aplicar_dano_ataque(Entidade* atacante, ListaEntidades* alvos, Sala*
                     *score += 100;
                 }
 
-                if (GetRandomValue(0, 9) < 4) { //40% de chance de dropar oxigênio ou energia
+                if (GetRandomValue(0, 9) < 7) { //70% de chance de dropar oxigênio ou energia
                     Entidade* drop = entidade_criar(ENT_ITEM, atual->pos.x, atual->pos.y);
                     drop->ataque    = GetRandomValue(1, 2); //1 = oxigênio, 2 = energia
                     drop->spawn_idx = -1;
@@ -625,7 +625,7 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
                         *score += 100;
                     }
 
-                    if (GetRandomValue(0, 9) < 4) { //40% de chance de dropar oxigênio ou energia
+                    if (GetRandomValue(0, 9) < 7) { //70% de chance de dropar oxigênio ou energia
                         Entidade* drop = entidade_criar(ENT_ITEM, atual->pos.x, atual->pos.y);
                         drop->ataque   = GetRandomValue(1, 2); //1 = oxigênio, 2 = energia
                         drop->spawn_idx = -1;
