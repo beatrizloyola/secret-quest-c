@@ -181,6 +181,7 @@ int main(void) {
     SetTargetFPS(60);
 
     menu_inicializar();
+    sistema_carregar_assets();
     EstadoJogo estado = ESTADO_MENU;
     Sala* sala = NULL;
     ListaEntidades* entidades = NULL;
@@ -319,7 +320,7 @@ int main(void) {
 
             case ESTADO_GAME_OVER:
                 BeginDrawing();
-                ClearBackground(BLACK);
+                sistema_desenhar_background();
                 DrawText("GAME OVER", 260, 250, 40, RED);
                 DrawText("Pressione ENTER para voltar ao menu", 250, 320, 20, WHITE);
                 EndDrawing();
@@ -351,6 +352,7 @@ int main(void) {
     }
     sala_cache_limpar();
     menu_finalizar();
+    sistema_descarregar_assets();
     CloseWindow();
     return 0;
 }

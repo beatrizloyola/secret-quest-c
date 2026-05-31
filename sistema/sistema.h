@@ -32,4 +32,10 @@ bool ranking_adicionar(Recorde* lista, int* count, const char* nome, int score);
 void save_salvar(const char* arquivo_sala, int player_x, int player_y, int hp, int score);
 bool save_carregar(char* arquivo_sala_out, int* player_x, int* player_y, int* hp, int* score);
 
+// Assets
+void sistema_carregar_assets(void);
+void sistema_descarregar_assets(void);
+
+void sistema_desenhar_background(void);
+
 #endif

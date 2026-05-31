@@ -2,13 +2,32 @@
 #include "raylib.h"
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
+
+#define NUM_ESTRELAS 40
 
 // Menu Principal
 static int opcao_selecionada = 0;
 static const char* opcoes[] = { "Iniciar Jogo", "Ranking", "Sair" };
 static const int num_opcoes = 3;
+static Texture2D background;
+
+void sistema_carregar_assets(void) {
+    background = LoadTexture("assets/background.png");
+}
+
+void sistema_descarregar_assets(void) {
+    UnloadTexture(background);
+}
+
+void sistema_desenhar_background(void) {
+    DrawTexture(background, 0, 0, WHITE);
+}
+
 void menu_inicializar(void) {
     opcao_selecionada = 0;
+    int largura = GetScreenWidth();
+    int altura = GetScreenHeight();
 }
 void menu_finalizar(void) {
     // vazio por enquanto
@@ -31,14 +50,94 @@ void menu_atualizar(EstadoJogo* estado) {
         }
     }
 }
+
 void menu_desenhar(void) {
-    ClearBackground(BLACK);
-    DrawText("SECRET QUEST", 100, 80, 40, YELLOW);
+    int largura_tela = GetScreenWidth();
+    int altura_tela = GetScreenHeight();
+    float tempo = (float)GetTime();
+
+    // Background do menu
+    sistema_desenhar_background();
+
+    // Configurações de layout
+    const char* titulo = "SECRET QUEST";
+    int titulo_fonte = 64;
+    int opcao_fonte = 26;
+    int instr_fonte = 14;
+    int esp_titulo_linha = 30;
+    int esp_linha_opcoes = 40;
+    int esp_opcoes = 50;
+    int esp_opcoes_instr = 50;
+
+    // Medidas para centralização vertical
+    int titulo_altura = titulo_fonte;
+    int opcoes_altura_total = (num_opcoes * opcao_fonte) + ((num_opcoes - 1) * esp_opcoes);
+    int instr_altura = instr_fonte;
+    int altura_total = titulo_altura + esp_titulo_linha + 2 + esp_linha_opcoes + opcoes_altura_total + esp_opcoes_instr + instr_altura;
+    int inicio_y = (altura_tela - altura_total) / 2;
+
+    // Título com sombreamento em camadas
+    int titulo_largura = MeasureText(titulo, titulo_fonte);
+    int titulo_x = (largura_tela - titulo_largura) / 2;
+    int titulo_y = inicio_y;
+
+    // Sombra espalhada em camadas (mais visível)
+    Color sombra1 = (Color){ 0, 20, 60, 120 };
+    Color sombra2 = (Color){ 0, 50, 100, 160 };
+    Color sombra3 = (Color){ 0, 80, 140, 200 };
+    Color sombra4 = (Color){ 0, 110, 180, 240 };
+    DrawText(titulo, titulo_x + 8, titulo_y + 8, titulo_fonte, sombra1);
+    DrawText(titulo, titulo_x + 6, titulo_y + 6, titulo_fonte, sombra2);
+    DrawText(titulo, titulo_x + 4, titulo_y + 4, titulo_fonte, sombra3);
+    DrawText(titulo, titulo_x + 2, titulo_y + 2, titulo_fonte, sombra4);
+
+    // Título principal
+    DrawText(titulo, titulo_x, titulo_y, titulo_fonte, (Color){ 0, 230, 255, 255 });
+
+    // Linha divisória entre título e opções
+    int linha_y = titulo_y + titulo_altura + esp_titulo_linha;
+    int linha_largura = titulo_largura + 60;
+    int linha_x = (largura_tela - linha_largura) / 2;
+    DrawLine(linha_x, linha_y, linha_x + linha_largura, linha_y, (Color){ 255, 255, 255, 180 });
+    DrawLine(linha_x, linha_y + 1, linha_x + linha_largura, linha_y + 1, (Color){ 200, 200, 200, 120 });
+
+    // Opções centralizadas
+    int opcoes_inicio_y = linha_y + 2 + esp_linha_opcoes;
+    Color cor_normal = (Color){ 170, 170, 190, 255 };
+    Color cor_selecionada = (Color){ 255, 230, 50, 255 };
+
     for (int i = 0; i < num_opcoes; i++) {
-        Color cor = (i == opcao_selecionada) ? RED : WHITE;
-        DrawText(opcoes[i], 100, 160 + i * 40, 20, cor);
+        int opcao_largura = MeasureText(opcoes[i], opcao_fonte);
+        int opcao_x = (largura_tela - opcao_largura) / 2;
+        int opcao_y = opcoes_inicio_y + i * (opcao_fonte + esp_opcoes);
+
+        if (i == opcao_selecionada) {
+            // Indicador: seta pulsante à esquerda
+            float pulso = sinf(tempo * 5.0f) * 4.0f;
+            const char* seta = ">";
+            DrawText(seta, (int)(opcao_x - 25 - pulso), opcao_y, opcao_fonte, (Color){ 0, 230, 255, 255 });
+
+            // Texto selecionado com sombra sutil
+            DrawText(opcoes[i], opcao_x + 1, opcao_y + 1, opcao_fonte, (Color){ 150, 130, 20, 180 });
+            DrawText(opcoes[i], opcao_x, opcao_y, opcao_fonte, cor_selecionada);
+        } else {
+            DrawText(opcoes[i], opcao_x, opcao_y, opcao_fonte, cor_normal);
+        }
     }
-    DrawText("Use CIMA/BAIXO + ENTER", 100, 360, 10, GRAY);
+
+    // Linha divisória entre opções e instruções
+    int linha2_y = opcoes_inicio_y + opcoes_altura_total + (esp_opcoes_instr / 2);
+    int linha2_largura = linha_largura;
+    int linha2_x = linha_x;
+    DrawLine(linha2_x, linha2_y, linha2_x + linha2_largura, linha2_y, (Color){ 255, 255, 255, 180 });
+    DrawLine(linha2_x, linha2_y + 1, linha2_x + linha2_largura, linha2_y + 1, (Color){ 200, 200, 200, 120 });
+
+    // Instruções centralizadas na base
+    const char* instrucoes = "Use CIMA / BAIXO + ENTER";
+    int instr_largura = MeasureText(instrucoes, instr_fonte);
+    int instr_x = (largura_tela - instr_largura) / 2;
+    int instr_y = opcoes_inicio_y + opcoes_altura_total + esp_opcoes_instr;
+    DrawText(instrucoes, instr_x, instr_y, instr_fonte, (Color){ 100, 100, 120, 255 });
 }
 
 // Menu Pause
@@ -70,7 +169,7 @@ void tela_ranking_atualizar(EstadoJogo* estado) {
     }
 }
 void tela_ranking_desenhar(void) {
-    ClearBackground(BLACK);
+    sistema_desenhar_background();
     DrawText("RANKING", 100, 80, 40, YELLOW);
     DrawText("--- Em breve ---", 100, 160, 20, GRAY);
     DrawText("Pressione ENTER para voltar", 100, 360, 15, GRAY);
