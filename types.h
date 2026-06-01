@@ -74,6 +74,7 @@ typedef struct Entidade {
     float timer_ataque; //timer_ataque;
     float timer_movimento; //timer pra controlar a patrulha do inimigo
     float timer_mudar_direcao; //timer pra IA mudar de direção voluntariamente enquanto anda
+    float timer_iframe; //timer de invencibilidade (2s ao tomar dano)
     bool ataque_ja_acertou; //evita que o mesmo golpe dê dano várias vezes
     int spawn_idx; //índice em sala->spawn_inimigos, -1 se não for inimigo
     int sprite_idx; //índice da sprite (0-4 para inimigos, -1 se não usar)

@@ -343,15 +343,16 @@ Entidade* entidade_criar(EntTipo tipo, int x, int y) { //função de criar entid
     entidade->timer_movimento = 0.0f; //timer usado pelo inimigo pra patrulhar sem andar rápido demais
     entidade->timer_mudar_direcao = 0.0f; //timer usado pra inimigo mudar de direção sem precisar bater na parede
     entidade->ataque_ja_acertou = false; //evita dar dano várias vezes no mesmo golpe de espada
+    entidade->timer_iframe = 0.0f;
 
     entidade->sprite_idx = -1;
     entidade->next = NULL;
 
     if (tipo == ENT_JOGADOR) {      //se o tipo for jogador:
-        entidade->max_hp      = 15;
-        entidade->hp          = 15;
-        entidade->max_oxigenio = 15;
-        entidade->oxigenio     = 15;
+        entidade->max_hp      = 20;
+        entidade->hp          = 20;
+        entidade->max_oxigenio = 20;
+        entidade->oxigenio     = 20;
         entidade->ataque      = 3;
         entidade->velocidade  = 4.0f;
     }
@@ -508,8 +509,9 @@ void entidade_mover_jogador(Entidade* jogador, Sala* sala, float dt) { //movimen
         dy *= 0.7071f;
     }
 
-    float novo_x = jogador->x + dx * jogador->velocidade * dt;
-    float novo_y = jogador->y + dy * jogador->velocidade * dt;
+    float vel = (jogador->hp <= 0) ? jogador->velocidade * 0.33f : jogador->velocidade;
+    float novo_x = jogador->x + dx * vel * dt;
+    float novo_y = jogador->y + dy * vel * dt;
 
     if (!entidade_colide_mapa(jogador, sala, novo_x, jogador->y, false)) { //move no eixo x se não bater em parede
         jogador->x = novo_x;
@@ -530,7 +532,7 @@ static void matar_inimigo(Entidade* alvo, Sala* sala, ListaEntidades* lista, int
     if (score != NULL) {
         *score += 100;
     }
-    if (GetRandomValue(0, 9) < 7) { //70% de chance de dropar oxigênio ou energia
+    if (GetRandomValue(0, 9) < 8) { //80% de chance de dropar oxigênio ou energia
         Entidade* drop = entidade_criar(ENT_ITEM, alvo->pos.x, alvo->pos.y);
         drop->ataque   = GetRandomValue(1, 2); //1 = oxigênio, 2 = energia
         drop->spawn_idx = -1;
@@ -550,7 +552,8 @@ static void aplicar_dano_ataque(Entidade* atacante, ListaEntidades* alvos, Sala*
         Entidade* proximo = atual->next; //guarda o próximo porque o inimigo pode morrer e sair da lista
 
         if (atual->tipo == ENT_INIMIGO && atual->vivo && entidade_dentro_ataque(atacante, sala, atual)) {
-            atual->hp -= atacante->ataque;
+            int dano = (atacante->tipo == ENT_JOGADOR && atacante->hp <= 0) ? 1 : atacante->ataque;
+            atual->hp -= dano;
             atacante->ataque_ja_acertou = true;
 
             if (atual->hp <= 0) {
@@ -564,7 +567,7 @@ static void aplicar_dano_ataque(Entidade* atacante, ListaEntidades* alvos, Sala*
     }
 }
 
-void entidade_atacar(Entidade* atacante, ListaEntidades* alvos, Sala* sala, int alcance, int* score) { //ativa um golpe de espada que segue o jogador por alguns instantes
+void entidade_atacar(Entidade* atacante, ListaEntidades* alvos, Sala* sala, int* score) { //ativa um golpe de espada que segue o jogador por alguns instantes
     if (atacante == NULL || alvos == NULL || sala == NULL) { //peperoni :T
         return;
     }
@@ -592,10 +595,12 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
         timer_decrementar(&atual->timer_ataque, dt);
         timer_decrementar(&atual->timer_movimento, dt);
         timer_decrementar(&atual->timer_mudar_direcao, dt);
+        timer_decrementar(&atual->timer_iframe, dt);
 
         if (atual->tipo == ENT_INIMIGO && atual->vivo) {
             if (jogador->timer_ataque > 0.0f && !jogador->ataque_ja_acertou && entidade_dentro_ataque(jogador, sala, atual)) { //se o inimigo entrar na espada durante o golpe, toma dano
-                atual->hp -= jogador->ataque;
+                int dano = (jogador->hp <= 0) ? 1 : jogador->ataque;
+                atual->hp -= dano;
                 jogador->ataque_ja_acertou = true;
 
                 if (atual->hp <= 0) {
@@ -605,8 +610,9 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
                 }
             }
 
-            if ((entidades_encostando(atual, jogador) || distancia_manhattan(atual, jogador) <= 0) && atual->timer_ataque <= 0.0f) { //se encostar no jogador, drena oxigênio (inimigos são aliens que sugam o ar)
+            if (entidades_encostando(atual, jogador) && atual->timer_ataque <= 0.0f && jogador->timer_iframe <= 0.0f) { //se encostar no jogador, drena oxigênio (inimigos são aliens que sugam o ar)
                 jogador->oxigenio -= atual->ataque;
+                jogador->timer_iframe = 2.0f;
                 atual->timer_ataque = 3.0f;
 
                 if (jogador->oxigenio <= 0) { //sem oxigênio = game over
@@ -650,7 +656,7 @@ void lista_atualizar(ListaEntidades* lista, Sala* sala, Entidade* jogador, float
                 if (atual->ataque == 0) { //item normal do mapa: só score
                     if (score != NULL) *score += 250;
                 } else if (atual->ataque == 1) { //drop oxigênio: restaura tanque de oxigênio
-                    jogador->oxigenio += 3;
+                    jogador->oxigenio += 4;
                     if (jogador->oxigenio > jogador->max_oxigenio) jogador->oxigenio = jogador->max_oxigenio;
                     if (score != NULL) *score += 50;
                 } else { //drop energia: restaura HP de combate

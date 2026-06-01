@@ -306,10 +306,10 @@ void tela_pause_desenhar(const char* nome_sala, int hp, int score, int oxigenio,
     snprintf(buffer, sizeof(buffer), "Sala Atual: %s", nome_sala ? nome_sala : "Desconhecida");
     DrawText(buffer, info_x, info_inicio_y, info_fonte, WHITE);
 
-    snprintf(buffer, sizeof(buffer), "Energia: %d / %d", hp, 15);
+    snprintf(buffer, sizeof(buffer), "Energia: %d / %d", hp, 20);
     DrawText(buffer, info_x, info_inicio_y + info_espaco, info_fonte, WHITE);
 
-    snprintf(buffer, sizeof(buffer), "Oxigenio: %d / %d", oxigenio, 15);
+    snprintf(buffer, sizeof(buffer), "Oxigenio: %d / %d", oxigenio, 20);
     DrawText(buffer, info_x, info_inicio_y + 2 * info_espaco, info_fonte, WHITE);
 
     snprintf(buffer, sizeof(buffer), "Pontuacao: %d", score);
@@ -500,7 +500,7 @@ void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado) {
 }
 
 // HUD
-void hud_desenhar(int score, int oxigenio, int energia, int digitos_coletados) {
+void hud_desenhar(int score, int oxigenio, int energia, int digitos_coletados, int codigo) {
     // Config
     int altura_hud  = 140;
     int y_hud       = GetScreenHeight() - altura_hud;
@@ -515,6 +515,18 @@ void hud_desenhar(int score, int oxigenio, int energia, int digitos_coletados) {
     int frags = 0;
     for (int i = 0; i < 4; i++) if ((digitos_coletados >> i) & 1) frags++;
     snprintf(texto, sizeof(texto), "Fragmentos: %d/4", frags);
+    DrawText(texto, 310, y_hud + 65, 22, frags == 4 ? ORANGE : WHITE);
+
+    // Código
+    int d0 = (codigo / 1000) % 10;
+    int d1 = (codigo / 100)  % 10;
+    int d2 = (codigo / 10)   % 10;
+    int d3 =  codigo          % 10;
+    snprintf(texto, sizeof(texto), "CODIGO: %c %c %c %c",
+        (digitos_coletados & 1) ? ('0' + d0) : '_',
+        (digitos_coletados & 2) ? ('0' + d1) : '_',
+        (digitos_coletados & 4) ? ('0' + d2) : '_',
+        (digitos_coletados & 8) ? ('0' + d3) : '_');
     DrawText(texto, 310, y_hud + 92, 22, frags == 4 ? ORANGE : WHITE);
 
     // Cilindro oxigênio
@@ -537,7 +549,7 @@ void hud_desenhar(int score, int oxigenio, int energia, int digitos_coletados) {
     DrawRectangle(cx + cw - 3, cy + 3, 3, ch - 6, WHITE);
 
     // Preenchimento barra de oxigênio
-    float proporcao = (float)oxigenio / 15.0f;
+    float proporcao = (float)oxigenio / 20.0f;
     if (proporcao < 0.0f) proporcao = 0.0f;
     if (proporcao > 1.0f) proporcao = 1.0f;
 
@@ -549,8 +561,8 @@ void hud_desenhar(int score, int oxigenio, int energia, int digitos_coletados) {
 
     // Mudança de cor de oxigênio
     Color cor;
-    if (oxigenio >= 11)      cor = (Color){ 0, 200, 255, 255 };
-    else if (oxigenio >= 6)  cor = (Color){ 0, 150, 200, 255 };
+    if (oxigenio >= 15)      cor = (Color){ 0, 200, 255, 255 };
+    else if (oxigenio >= 8)  cor = (Color){ 0, 150, 200, 255 };
     else                     cor = (Color){ 0, 80,  120, 255 };
 
     // preenchimento barra de oxigenio
@@ -583,7 +595,7 @@ void hud_desenhar(int score, int oxigenio, int energia, int digitos_coletados) {
     DrawRectangle(px + pw - 3, py + 3, 3, ph - 6, WHITE);
 
     // Preenchimento pilha
-    float proporcaoPilha = (float)energia / 15.0f;
+    float proporcaoPilha = (float)energia / 20.0f;
     if (proporcaoPilha < 0.0f) proporcaoPilha = 0.0f;
     if (proporcaoPilha > 1.0f) proporcaoPilha = 1.0f;
 
@@ -595,8 +607,8 @@ void hud_desenhar(int score, int oxigenio, int energia, int digitos_coletados) {
 
     // mudança de cor de energia
     Color corPilha;
-    if (energia >= 11)       corPilha = GREEN;
-    else if (energia >= 6)  corPilha = YELLOW;
+    if (energia >= 15)       corPilha = GREEN;
+    else if (energia >= 8)  corPilha = YELLOW;
     else                    corPilha = RED;
 
     // preenchimento da barra

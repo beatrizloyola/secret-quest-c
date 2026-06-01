@@ -1,8 +1,18 @@
-// Linux
+== Linux ==
+
+Dependências: raylib instalado em /usr/local
 
 make
+./game
 
-// Windows
-C:\raylib\w64devkit\bin\gcc.exe main.c entidade/entidade.c mapa/mapa.c sistema/sistema.c -o game.exe -IC:\raylib\raylib\src -LC:\raylib\raylib\src -lraylib -lopengl32 -lgdi32 -lwinmm 
-(ctrl+shift+b só funciona se o tasks.json e o c_cpp_properties.json estiver configurado)
-.\game.exe
+== Windows ==
+
+Dependências: w64devkit em C:\raylib\w64devkit, raylib em C:\raylib\raylib\src
+
+1. Compile (pode usar o terminal do w64devkit ou o integrado do VS Code):
+
+   gcc main.c entidade/entidade.c mapa/mapa.c sistema/sistema.c -o game.exe -IC:/raylib/raylib/src -LC:/raylib/raylib/src -lraylib -lopengl32 -lgdi32 -lwinmm
+
+2. Execute:
+
+   .\game.exe

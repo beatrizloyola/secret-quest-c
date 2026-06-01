@@ -28,7 +28,7 @@ void tela_vitoria_desenhar(int score, const char* nome_input);
 void sistema_transicao(EstadoJogo* estado_atual, EstadoJogo novo_estado);
 
 // HUD
-void hud_desenhar(int score, int oxigenio, int energia, int digitos_coletados);
+void hud_desenhar(int score, int oxigenio, int energia, int digitos_coletados, int codigo);
 
 // Sistema Ranking
 void ranking_carregar(Recorde* lista, int max);
