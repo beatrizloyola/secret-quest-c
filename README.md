@@ -2,7 +2,7 @@
 
 <img src="https://upload.wikimedia.org/wikipedia/en/7/76/Secret_Quest_cover.jpg" align="right" width="180" style="padding-left: 10px; padding-bottom: 5px"/>
 
-Jogo de exploração top-down em C com raylib, baseado em Secret Quest (Atari, 1989). Desenvolvido como projeto da disciplina de PIF (Programação Imperativa e Funcional) da CESAR School, turma A, 2026.1.
+Jogo de exploração top-down em C com raylib, baseado em Secret Quest (Atari, 1989). Desenvolvido como projeto da disciplina de PIF (Programação Imperativa e Funcional) da CESAR School, turma A, 2026.1. [Assista à gameplay aqui.](https://youtu.be/nuajGfqd0wY)
 
 ## Sobre
 
