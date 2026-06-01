@@ -4,13 +4,13 @@
 
 Jogo de exploração top-down em C com raylib, baseado em Secret Quest (Atari, 1989). Desenvolvido como projeto da disciplina de PIF (Programação Imperativa e Funcional) da CESAR School, turma A, 2026.1.
 
-## Link de gameplay:
-
-https://youtu.be/nuajGfqd0wY
-
 ## Sobre
 
 O jogador explora uma estação espacial com 16 salas interligadas, enfrenta inimigos alienígenas e coleta 4 fragmentos do código de autodestruição. Com o código completo, ativa o terminal e precisa escapar pela saída antes que a estação exploda.
+
+## Link de gameplay:
+
+https://youtu.be/nuajGfqd0wY
 
 ## Funcionalidades
 
