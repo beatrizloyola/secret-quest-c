@@ -95,7 +95,8 @@ typedef enum {
     ESTADO_PAUSE,      // tela de menu/pause
     ESTADO_RANKING,     // informação de rankin
     ESTADO_GAME_OVER,   // fim do jogo (morreu)
-    ESTADO_VITORIA      // fim do jogo (ganhou)
+    ESTADO_VITORIA,     // fim do jogo (ganhou)
+    ESTADO_CUTSCENE     // cutscenes antes do jogo
 } EstadoJogo;
 
 // Controla o objetivo principal da missão

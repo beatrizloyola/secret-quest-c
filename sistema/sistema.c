@@ -28,6 +28,7 @@ static Texture2D texTerminal;
 static Texture2D texSaida;
 static Texture2D texFragmento;
 static Texture2D texBackWIN;
+static Texture2D texCutscene[4];
 
 void sistema_carregar_assets(void) {
     background = LoadTexture("assets/background.png");
@@ -58,6 +59,10 @@ void sistema_carregar_assets(void) {
     texSaida        = LoadTexture("assets/saida.png");
     texFragmento    = LoadTexture("assets/fragmento.png");
     texBackWIN      = LoadTexture("assets/backWIN.png");
+    texCutscene[0] = LoadTexture("assets/cutscene_1.png");
+    texCutscene[1] = LoadTexture("assets/cutscene_2.png");
+    texCutscene[2] = LoadTexture("assets/cutscene_3.png");
+    texCutscene[3] = LoadTexture("assets/cutscene_4.png");
 }
 
 void sistema_descarregar_assets(void) {
@@ -68,14 +73,6 @@ void sistema_descarregar_assets(void) {
     UnloadTexture(texPlayerDown);
     UnloadTexture(texPlayerLeft);
     UnloadTexture(texPlayerRight);
-    
-    // Pode usar for para fazer unload
-    for (int i = 0; i < 5; i++) {
-        UnloadTexture(texEnemy[i]);
-    }
-    for (int i = 0; i < 5; i++) {
-        UnloadTexture(texAtaque[i]);
-    }
     UnloadTexture(texChao);
     UnloadTexture(texParede);
     UnloadTexture(texMoeda);
@@ -85,6 +82,17 @@ void sistema_descarregar_assets(void) {
     UnloadTexture(texSaida);
     UnloadTexture(texFragmento);
     UnloadTexture(texBackWIN);
+    
+    // Pode usar for para fazer unload
+    for (int i = 0; i < 5; i++) {
+        UnloadTexture(texEnemy[i]);
+    }
+    for (int i = 0; i < 5; i++) {
+        UnloadTexture(texAtaque[i]);
+    }
+    for (int i = 0; i < 4; i++) {
+        UnloadTexture(texCutscene[i]);
+    }
 }
 
 // Movimentação player
@@ -123,6 +131,10 @@ Texture2D sistema_get_oxigenio_item_texture(void) { return texOxigenioItem; }
 Texture2D sistema_get_terminal_texture(void)     { return texTerminal; }
 Texture2D sistema_get_saida_texture(void)        { return texSaida; }
 Texture2D sistema_get_fragmento_texture(void)   { return texFragmento; }
+Texture2D sistema_get_cutscene_texture(int idx) {
+    if (idx >= 0 && idx < 4) return texCutscene[idx];
+    return texCutscene[0];
+}
 
 // Tela background
 void sistema_desenhar_background(void) {
@@ -151,7 +163,7 @@ void menu_atualizar(EstadoJogo* estado) {
     }
     if (IsKeyPressed(KEY_ENTER)) {
         switch (opcao_selecionada) {
-            case 0: sistema_transicao(estado, ESTADO_JOGANDO); break;
+            case 0: sistema_transicao(estado, ESTADO_CUTSCENE); break;
             case 1: sistema_transicao(estado, ESTADO_RANKING); break;
             case 2: CloseWindow(); break;
         }
