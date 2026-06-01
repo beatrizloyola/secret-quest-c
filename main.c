@@ -182,6 +182,8 @@ int main(void) {
     SetTargetFPS(60);
     SetExitKey(KEY_NULL); //desabilita ESC fechar janela; janela fecha só pelo X ou pelo menu Sair
 
+    InitAudioDevice();
+
     menu_inicializar();
     sistema_carregar_assets();
     EstadoJogo estado = ESTADO_MENU;
@@ -222,6 +224,7 @@ int main(void) {
 
 
     while (!WindowShouldClose()) {
+        sistema_atualizar_musica(); //atualização sistema música
 
         switch (estado) {
 
@@ -585,6 +588,7 @@ int main(void) {
     sala_cache_limpar();
     menu_finalizar();
     sistema_descarregar_assets();
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }
