@@ -31,6 +31,7 @@ O jogador explora uma estação espacial com 16 salas interligadas, enfrenta ini
 
 ## Como compilar
 
+### Linux
 **Dependências:** [raylib](https://www.raylib.com/) instalado em `/usr/local`.
 
 ```bash
@@ -38,7 +39,19 @@ make
 ./game
 ```
 
-Para limpar o executável:
+### Windows
+**Dependências:** w64devkit em `C:\raylib\w64devkit`, raylib em `C:\raylib\raylib\src`.
+
+1. Compile (pode usar o terminal do w64devkit ou o integrado do VS Code):
+   ```bash
+   gcc main.c entidade/entidade.c mapa/mapa.c sistema/sistema.c -o game.exe -IC:/raylib/raylib/src -LC:/raylib/raylib/src -lraylib -lopengl32 -lgdi32 -lwinmm
+   ```
+2. Execute:
+   ```bash
+   .\game.exe
+   ```
+
+Para limpar o executável em qualquer plataforma:
 
 ```bash
 make clean
