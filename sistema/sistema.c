@@ -29,6 +29,7 @@ static Texture2D texSaida;
 static Texture2D texFragmento;
 static Texture2D texBackWIN;
 static Texture2D texCutscene[4];
+static Music musicaGlobal;
 
 void sistema_carregar_assets(void) {
     background = LoadTexture("assets/background.png");
@@ -63,6 +64,10 @@ void sistema_carregar_assets(void) {
     texCutscene[1] = LoadTexture("assets/cutscene_2.png");
     texCutscene[2] = LoadTexture("assets/cutscene_3.png");
     texCutscene[3] = LoadTexture("assets/cutscene_4.png");
+
+    musicaGlobal = LoadMusicStream("assets/Tomorrowland.mp3");
+    PlayMusicStream(musicaGlobal);
+    SetMusicVolume(musicaGlobal, 0.5f);
 }
 
 void sistema_descarregar_assets(void) {
@@ -93,6 +98,11 @@ void sistema_descarregar_assets(void) {
     for (int i = 0; i < 4; i++) {
         UnloadTexture(texCutscene[i]);
     }
+    UnloadMusicStream(musicaGlobal);
+}
+
+void sistema_atualizar_musica(void) {
+    UpdateMusicStream(musicaGlobal);
 }
 
 // Movimentação player
