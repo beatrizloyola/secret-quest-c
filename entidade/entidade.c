@@ -567,7 +567,7 @@ static void aplicar_dano_ataque(Entidade* atacante, ListaEntidades* alvos, Sala*
     }
 }
 
-void entidade_atacar(Entidade* atacante, ListaEntidades* alvos, Sala* sala, int alcance, int* score) { //ativa um golpe de espada que segue o jogador por alguns instantes
+void entidade_atacar(Entidade* atacante, ListaEntidades* alvos, Sala* sala, int* score) { //ativa um golpe de espada que segue o jogador por alguns instantes
     if (atacante == NULL || alvos == NULL || sala == NULL) { //peperoni :T
         return;
     }

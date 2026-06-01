@@ -292,7 +292,7 @@ int main(void) {
                     if (IsKeyPressed(KEY_SPACE) && jogador->timer_ataque <= 0.0f) { //porrada 💥💥 — custa 1 de energia
                         jogador->hp--;
                         if (jogador->hp < 0) jogador->hp = 0;
-                        entidade_atacar(jogador, entidades, sala, 1, &score);
+                        entidade_atacar(jogador, entidades, sala, &score);
                     }
                 }
 

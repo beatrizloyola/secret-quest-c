@@ -109,7 +109,7 @@ Direcao sala_direcao_porta(Sala* s, int x, int y) {
     Direcao dir = DIR_CIMA;
     if (dist_sul   < min) { min = dist_sul;   dir = DIR_BAIXO;    }
     if (dist_oeste < min) { min = dist_oeste; dir = DIR_ESQUERDA; }
-    if (dist_leste < min) {                   dir = DIR_DIREITA;  }
+    if (dist_leste < min) { min = dist_leste; dir = DIR_DIREITA; }
     return dir;
 }
 
@@ -129,7 +129,7 @@ void sala_desenhar(Sala* s, int cam_x, int cam_y, int tamanho_tile, int cam_larg
         int my = cam_y + y;
         for (int x = 0; x < cam_larg; x++) {
             int mx = cam_x + x;
-            if (mx >= s->largura || my >= s->altura) continue;
+            if (mx < 0 || my < 0 || mx >= s->largura || my >= s->altura) continue;
 
             int px = x * tamanho_tile;
             int py = y * tamanho_tile;
