@@ -532,12 +532,10 @@ static void matar_inimigo(Entidade* alvo, Sala* sala, ListaEntidades* lista, int
     if (score != NULL) {
         *score += 100;
     }
-    if (GetRandomValue(0, 9) < 8) { //80% de chance de dropar oxigênio ou energia
-        Entidade* drop = entidade_criar(ENT_ITEM, alvo->pos.x, alvo->pos.y);
-        drop->ataque   = GetRandomValue(1, 2); //1 = oxigênio, 2 = energia
-        drop->spawn_idx = -1;
-        lista_adicionar(lista, drop);
-    }
+    Entidade* drop = entidade_criar(ENT_ITEM, alvo->pos.x, alvo->pos.y);
+    drop->ataque   = (GetRandomValue(1, 100) <= 65) ? 1 : 2; //65% oxigênio, 35% energia
+    drop->spawn_idx = -1;
+    lista_adicionar(lista, drop);
     lista_remover(lista, alvo);
 }
 
