@@ -203,6 +203,12 @@ int main(void) {
 
     float timer_oxigenio = 0.0f; //tempo desde a última queda de oxigênio
 
+    // Controle das cutscenes
+    int cutscene_idx = 0;       // 0 a 3
+    float fade_alpha = 1.0f;    // 1.0 = preto total, 0.0 = imagem visível
+    int fade_dir = -1;          // -1 = fade in (clareia), 1 = fade out (escurece)
+    bool esperando_enter = false;
+
     Recorde ranking[5];
     int ranking_count = 0;
     char nome_input[16] = {0};
@@ -233,6 +239,53 @@ int main(void) {
                 menu_desenhar();
                 EndDrawing();
                 break;
+
+            case ESTADO_CUTSCENE: {
+                float dt_cut = GetFrameTime();
+                float fade_speed = 2.5f; // duração dos fades
+
+                // Atualiza fade
+                if (!esperando_enter) {
+                    fade_alpha += fade_dir * fade_speed * dt_cut;
+                    if (fade_alpha <= 0.0f) {
+                        fade_alpha = 0.0f;
+                        fade_dir = 0;
+                        esperando_enter = true;
+                    }
+                    if (fade_alpha >= 1.0f) {
+                        fade_alpha = 1.0f;
+                        cutscene_idx++;
+                        if (cutscene_idx >= 4) {
+                            // Após as cutscenes, o jogo começa
+                            cutscene_idx = 0;
+                            fade_alpha = 1.0f;
+                            fade_dir = -1;
+                            esperando_enter = false;
+                            sistema_transicao(&estado, ESTADO_JOGANDO);
+                            break;
+                        }
+                        fade_dir = -1;
+                        esperando_enter = false;
+                    }
+                }
+
+                // Enter inicia o fade out
+                if (esperando_enter && IsKeyPressed(KEY_ENTER)) {
+                    esperando_enter = false;
+                    fade_dir = 1; // começa a escurecer
+                }
+
+                BeginDrawing();
+                Texture2D tex = sistema_get_cutscene_texture(cutscene_idx);
+                DrawTexture(tex, 0, 0, WHITE);
+
+                // Sobreposição fade
+                if (fade_alpha > 0.0f) {
+                    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){ 0, 0, 0, (unsigned char)(fade_alpha * 255) });
+                }
+                EndDrawing();
+                break;
+            }
 
             case ESTADO_JOGANDO: {
                 if (sala == NULL) {

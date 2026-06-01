@@ -57,5 +57,6 @@ Texture2D sistema_get_oxigenio_item_texture(void);
 Texture2D sistema_get_terminal_texture(void);
 Texture2D sistema_get_saida_texture(void);
 Texture2D sistema_get_fragmento_texture(void);
+Texture2D sistema_get_cutscene_texture(int idx);
 
 #endif
